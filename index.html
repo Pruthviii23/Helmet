@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Helmate</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Helmate: a smart helmet that talks to your bike. Wear it and buckle it, or the bike won't start.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a helmet-yellow hero that IS the demo (live simulator), then alternating paper / road-ink bands in one 1120px column. Chunky road-sign shapes, offset ink shadows. */
+:root{
+  --sun:#FFC72C;      /* helmet yellow */
+  --sun-deep:#E9A800;
+  --ink:#151823;      /* road ink */
+  --road:#232837;
+  --road-2:#2E3446;
+  --paper:#F2F4F8;    /* cool off-white */
+  --card:#FFFFFF;
+  --go:#12A15E;
+  --go-soft:#D7F5E5;
+  --stop:#E5372B;
+  --stop-soft:#FDE1DE;
+  --wave:#2B7FFF;
+  --mute:#5B6173;
+  --mute-ink:#A3A9BA;
+  --line:#D8DCE5;
+  --skin:#D89A6A;
+  --skin-2:#C2845A;
+
+  --display:"Archivo","Arial Black",Impact,system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+
+  --r:20px;
+  --shadow:6px 6px 0 var(--ink);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-stretch:118%;line-height:.98;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(2.1rem,5.4vw,3.6rem);font-weight:900}
+h3{font-size:1.2rem;font-weight:800;font-stretch:105%;line-height:1.15}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5em}
+.eyebrow::before{content:"";width:22px;height:3px;background:currentColor;border-radius:2px}
+.sec{padding-block:clamp(64px,9vw,112px)}
+.sec-head{display:grid;gap:14px;margin-bottom:clamp(32px,5vw,52px);max-width:720px}
+.sec-head p{font-size:1.1rem;color:var(--mute);max-width:52ch}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:3px solid var(--wave);outline-offset:3px;border-radius:8px}
+
+/* ---------- HERO ---------- */
+.hero{background:var(--sun);position:relative;margin-top:calc(-1 * env(safe-area-inset-top,0px));padding-top:calc(env(safe-area-inset-top,0px) + 22px);padding-bottom:64px;overflow:hidden}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:repeating-linear-gradient(-45deg,var(--ink) 0 16px,var(--sun) 16px 32px)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:clamp(28px,5vw,56px)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:900;font-stretch:125%;font-size:1.35rem;letter-spacing:.02em;color:var(--ink);text-decoration:none}
+.brand svg{width:34px;height:34px}
+.toplinks{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.toplinks a{font-family:var(--mono);font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:7px 12px;border:2px solid var(--ink);border-radius:999px;transition:background .15s,color .15s}
+.toplinks a:hover{background:var(--ink);color:var(--sun)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:clamp(28px,4vw,56px);align-items:center}
+.hero h1{font-size:clamp(3rem,6.2vw,5.2rem);font-weight:900;font-stretch:112%;line-height:.9;letter-spacing:-.02em}
+.hero h1 .plate{display:inline-block;background:var(--ink);color:var(--sun);padding:.04em .18em .1em;border-radius:.14em;margin-top:.08em;transform:rotate(-2deg)}
+.lede{font-size:clamp(1.1rem,1.6vw,1.3rem);margin-top:24px;max-width:30ch;font-weight:500}
+.hint{margin-top:26px;display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.hint svg{width:46px;height:20px;fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:900px){.hint svg{transform:rotate(90deg)}}
+
+/* ---------- SIMULATOR ---------- */
+.stage{background:var(--card);border:3px solid var(--ink);border-radius:26px;box-shadow:8px 8px 0 var(--ink);padding:14px;display:grid;gap:12px;min-width:0}
+.lcd{background:var(--ink);color:#9BF0C3;border-radius:14px;padding:12px 16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;font-family:var(--mono);box-shadow:inset 0 0 0 2px #2c3242}
+.lcd-dot{width:14px;height:14px;border-radius:50%;background:var(--stop);box-shadow:0 0 0 4px rgba(229,55,43,.25);transition:background .3s,box-shadow .3s}
+.lcd-text{min-width:0;display:grid;line-height:1.2}
+.lcd-main{font-weight:700;font-size:1.05rem;letter-spacing:.08em;color:#FFB4AC;transition:color .3s}
+.lcd-sub{font-size:.78rem;color:var(--mute-ink);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{display:flex;align-items:flex-end;gap:3px;height:20px}
+.bars i{width:5px;background:#3a4155;border-radius:2px;transition:background .3s}
+.bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:10px}.bars i:nth-child(3){height:15px}.bars i:nth-child(4){height:20px}
+.ok .lcd-dot{background:#2EE88A;box-shadow:0 0 0 4px rgba(46,232,138,.25)}
+.ok .lcd-main{color:#9BF0C3}
+.ok .bars i{background:#2EE88A}
+.running .lcd-main{color:var(--sun)}
+.running .lcd-dot{background:var(--sun);box-shadow:0 0 0 4px rgba(255,199,44,.3)}
+
+.scene{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.5fr) minmax(0,1.35fr);align-items:end;gap:4px;background:linear-gradient(to bottom,#EAF1FF 0,#F7F9FD 74%,#DADFE8 74%,#DADFE8 76%,#F7F9FD 76%);border-radius:16px;padding:10px 8px 6px;min-height:210px;position:relative;overflow:hidden}
+.scene svg{width:100%;height:auto;display:block;overflow:visible}
+.helmet-pos{transform:translate(-4px,-136px) rotate(-8deg);transform-box:view-box;transform-origin:120px 120px;transition:transform .55s cubic-bezier(.34,1.5,.6,1)}
+.worn .helmet-pos{transform:translateY(0)}
+.fsr{fill:#B8BECC;transition:fill .3s}
+.worn .fsr{fill:var(--go)}
+.fsr-ring{fill:none;stroke:var(--go);stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+.worn .fsr-ring{animation:ring 1.6s ease-out infinite}
+@keyframes ring{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(3.2)}}
+.buckle-l{transform:translate(-14px,6px) rotate(-18deg);transform-box:fill-box;transform-origin:center;transition:transform .35s cubic-bezier(.34,1.6,.6,1)}
+.buckle-r{transform:translate(14px,6px) rotate(18deg);transform-box:fill-box;transform-origin:center;transition:transform .35s cubic-bezier(.34,1.6,.6,1)}
+.strapped .buckle-l,.strapped .buckle-r{transform:none}
+.hall-led{fill:#59607a;transition:fill .2s}
+.strapped .hall-led{fill:#2EE88A}
+.click-burst{opacity:0;fill:none;stroke:var(--wave);stroke-width:3;stroke-linecap:round}
+.strapped .click-burst{animation:burst .5s ease-out 1}
+@keyframes burst{0%{opacity:1}100%{opacity:0}}
+.tag{font-family:var(--mono);font-size:12.5px;font-weight:700;fill:var(--mute);letter-spacing:.06em}
+
+.link-line{stroke:#B8BECC;stroke-width:3;stroke-dasharray:4 7;fill:none;transition:stroke .3s}
+.ok .link-line{stroke:var(--wave)}
+.link-x{stroke:var(--stop);stroke-width:4;stroke-linecap:round;transition:opacity .3s}
+.ok .link-x{opacity:0}
+.pkt{fill:var(--wave);opacity:0}
+.ok .pkt{animation:pkt 1.1s linear infinite}
+.ok .pkt:nth-of-type(2){animation-delay:.37s}
+.ok .pkt:nth-of-type(3){animation-delay:.74s}
+@keyframes pkt{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(80px);opacity:0}}
+.link-label{font-family:var(--mono);font-size:10px;font-weight:700;fill:var(--mute);letter-spacing:.08em}
+.ok .link-label{fill:var(--wave)}
+
+.bike-body{transform-box:view-box}
+.running .bike-body{animation:rumble .09s linear infinite}
+@keyframes rumble{0%{transform:translate(0,0)}50%{transform:translate(.7px,-1px)}100%{transform:translate(-.5px,.4px)}}
+.lamp{fill:#C9CED9;transition:fill .3s}
+.running .lamp{fill:var(--sun)}
+.beam{fill:var(--sun);opacity:0;transition:opacity .4s}
+.running .beam{opacity:.45}
+.puff{fill:#AEB4C2;opacity:0}
+.running .puff{animation:puff 1s ease-out infinite}
+.running .puff:nth-of-type(2){animation-delay:.33s}
+.running .puff:nth-of-type(3){animation-delay:.66s}
+@keyframes puff{0%{opacity:.8;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(-26px,-10px) scale(1.8)}}
+.puff{transform-box:fill-box;transform-origin:center}
+.lock-bg{fill:var(--stop);transition:fill .3s}
+.ok .lock-bg{fill:var(--go)}
+.shackle{transition:transform .35s cubic-bezier(.34,1.6,.6,1)}
+.ok .shackle{transform:translate(5px,-5px)}
+
+.circuit{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--mono);font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);flex-wrap:wrap}
+.node{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:2px solid var(--line);border-radius:10px;background:var(--paper)}
+.node svg.i{width:18px;height:18px}
+.relay{display:grid;justify-items:center;gap:0}
+.relay svg{width:86px;height:30px;overflow:visible}
+.relay small{font-size:.66rem;margin-top:-2px}
+.wire{stroke:#9AA1B2;stroke-width:3;stroke-linecap:round;fill:none;transition:stroke .3s}
+.ok .wire{stroke:var(--go)}
+.lever{stroke:var(--stop);stroke-width:4;stroke-linecap:round;transform-box:view-box;transform-origin:22px 20px;transform:rotate(-28deg);transition:transform .35s cubic-bezier(.34,1.6,.6,1),stroke .3s}
+.ok .lever{transform:rotate(0);stroke:var(--go)}
+.ok .node.out{border-color:var(--go);color:var(--go)}
+
+.controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:stretch}
+.tog{appearance:none;border:2.5px solid var(--ink);background:var(--paper);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;font:inherit;color:var(--ink);transition:background .2s,transform .1s;min-width:0}
+.tog:active{transform:translateY(2px)}
+.tog:hover{background:#fff}
+.knob{width:42px;height:24px;border-radius:99px;background:#C8CDD8;position:relative;flex:none;transition:background .2s}
+.knob::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.34,1.6,.6,1)}
+.tog[aria-pressed="true"]{background:var(--go-soft)}
+.tog[aria-pressed="true"] .knob{background:var(--go)}
+.tog[aria-pressed="true"] .knob::after{transform:translateX(18px)}
+.tog-t{display:grid;line-height:1.15;min-width:0}
+.tog-t b{font-weight:700;font-size:.98rem}
+.tog-t small{font-family:var(--mono);font-size:.68rem;color:var(--mute);letter-spacing:.04em;text-transform:uppercase;margin-top:3px}
+.start{appearance:none;cursor:pointer;width:84px;height:84px;border-radius:50%;border:3px solid var(--ink);background:radial-gradient(circle at 35% 30%,#FF6B5E,var(--stop) 60%,#B8241A);color:#fff;font-family:var(--display);font-weight:900;font-stretch:110%;font-size:.86rem;letter-spacing:.06em;display:grid;place-items:center;align-content:center;gap:2px;box-shadow:0 5px 0 var(--ink);transition:transform .08s,box-shadow .08s;justify-self:end}
+.start svg.i{width:22px;height:22px;stroke-width:2.6}
+.start:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.ok .start{background:radial-gradient(circle at 35% 30%,#5CF0A4,var(--go) 60%,#0A7342);animation:breathe 1.6s ease-in-out infinite}
+.running .start{background:radial-gradient(circle at 35% 30%,#FFE08A,var(--sun) 60%,var(--sun-deep));color:var(--ink);animation:none}
+@keyframes breathe{50%{box-shadow:0 5px 0 var(--ink),0 0 0 8px rgba(18,161,94,.22)}}
+.denied{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.denied .lcd{box-shadow:inset 0 0 0 2px var(--stop)}
+
+/* ---------- PAIR ---------- */
+.pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:center}
+.unit{border:3px solid var(--ink);border-radius:var(--r);padding:clamp(20px,3vw,30px);box-shadow:var(--shadow);display:grid;gap:18px;align-content:start;height:100%}
+.unit.h{background:var(--sun)}
+.unit.b{background:var(--ink);color:#fff;box-shadow:6px 6px 0 var(--sun-deep)}
+.unit-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.unit-top h3{font-size:1.6rem;font-stretch:120%;font-weight:900}
+.unit-badge{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:var(--ink);color:var(--sun);flex:none}
+.unit.b .unit-badge{background:var(--sun);color:var(--ink)}
+.unit-badge svg.i{width:32px;height:32px}
+.unit-job{font-size:1.05rem;font-weight:500}
+.unit.b .unit-job{color:#C9CEDB}
+.parts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.part{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;background:rgba(255,255,255,.55);border:2px solid rgba(21,24,35,.14);border-radius:14px;padding:10px 12px}
+.unit.b .part{background:var(--road);border-color:#3a4155}
+.part-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--card);color:var(--ink)}
+.unit.b .part-ic{background:var(--road-2);color:var(--sun)}
+.part b{display:block;font-weight:700;line-height:1.2}
+.part span{font-size:.92rem;color:var(--mute)}
+.unit.b .part span{color:var(--mute-ink)}
+.part .have{color:#fff}
+.have{font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:99px;background:var(--go);color:#fff;white-space:nowrap}
+.bridge{display:grid;justify-items:center;gap:8px;padding:0 10px;width:190px}
+.bridge svg{width:170px;height:80px;overflow:visible}
+.bridge .w{fill:none;stroke:var(--wave);stroke-width:3;stroke-linecap:round;animation:wv 1.4s ease-out infinite;opacity:0}
+.bridge .w:nth-child(2){animation-delay:.25s}.bridge .w:nth-child(3){animation-delay:.5s}
+@keyframes wv{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+.bridge b{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;color:var(--wave);text-align:center;line-height:1.3}
+.bridge span{font-size:.84rem;color:var(--mute);text-align:center;line-height:1.3}
+.todo{margin-top:34px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.todo > b{font-family:var(--mono);font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-right:4px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:2px dashed #AEB4C2;border-radius:99px;font-size:.92rem;font-weight:600;background:var(--card)}
+.chip i{font-style:normal;font-family:var(--mono);font-size:.72rem;color:var(--mute)}
+
+/* ---------- FLOW ---------- */
+.dark{background:var(--ink);color:#fff}
+.dark .sec-head p{color:var(--mute-ink)}
+.dark .eyebrow{color:var(--sun)}
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;position:relative;counter-reset:s}
+.flow::before{content:"";position:absolute;left:5%;right:5%;top:36px;height:4px;background:repeating-linear-gradient(90deg,#3B4256 0 12px,transparent 12px 22px);border-radius:2px}
+.runner{position:absolute;top:28px;left:5%;width:20px;height:20px;border-radius:50%;background:var(--sun);box-shadow:0 0 0 6px rgba(255,199,44,.18);animation:run 6s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes run{0%{left:5%;opacity:0}6%{opacity:1}88%{opacity:1}94%,100%{left:calc(95% - 20px);opacity:0}}
+.step{position:relative;display:grid;gap:10px;justify-items:start}
+.step-ic{width:76px;height:76px;border-radius:22px;background:var(--road);border:3px solid #3B4256;display:grid;place-items:center;color:var(--sun);position:relative;z-index:1}
+.step:last-child .step-ic{background:var(--sun);color:var(--ink);border-color:var(--sun)}
+.step-ic svg.i{width:34px;height:34px}
+.step-n{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--sun);letter-spacing:.1em}
+.step h3{font-size:1.3rem;font-stretch:115%}
+.step p{color:var(--mute-ink);font-size:.96rem;line-height:1.4}
+.step .tech{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:#7D8499;border:1.5px solid #3B4256;border-radius:6px;padding:2px 7px}
+.loop{margin-top:56px;border:3px solid #3B4256;border-radius:var(--r);padding:clamp(18px,3vw,28px);display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(18px,3vw,36px);align-items:center;background:var(--road)}
+.ecg{width:clamp(180px,30vw,320px);height:80px}
+.ecg path{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.ecg .beat{stroke:#2EE88A;stroke-dasharray:420;stroke-dashoffset:420;animation:ecg 3s linear infinite}
+.ecg .flat{stroke:var(--stop)}
+@keyframes ecg{0%{stroke-dashoffset:420}70%,100%{stroke-dashoffset:0}}
+.loop h3{font-size:clamp(1.3rem,2.4vw,1.8rem);font-stretch:118%;font-weight:900;margin-bottom:8px}
+.loop h3 em{font-style:normal;color:var(--sun)}
+.loop p{color:var(--mute-ink);max-width:56ch}
+
+/* ---------- RULE ---------- */
+.rule-wrap{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center}
+.rule-wrap .sec-head{margin-bottom:0}
+.rule{display:grid;grid-template-columns:auto repeat(2,minmax(0,1fr));gap:12px}
+.ax{font-family:var(--mono);font-size:.76rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:8px}
+.ax.col{justify-content:center;padding-bottom:2px}
+.ax.row{justify-content:flex-end;text-align:right;padding-right:6px}
+.ax svg.i{width:20px;height:20px}
+.cell{border:3px solid var(--ink);border-radius:18px;padding:22px 18px;display:grid;justify-items:center;text-align:center;gap:6px;background:var(--card)}
+.cell .big{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--stop-soft);color:var(--stop)}
+.cell .big svg.i{width:28px;height:28px;stroke-width:2.6}
+.cell b{font-family:var(--display);font-stretch:118%;font-weight:900;font-size:1.3rem}
+.cell span{font-size:.92rem;color:var(--mute)}
+.cell.yes{background:var(--go);color:#fff;box-shadow:var(--shadow)}
+.cell.yes .big{background:#fff;color:var(--go)}
+.cell.yes span{color:#E2FFF0}
+
+/* ---------- CHEAT ---------- */
+.sec.yellow{background:var(--sun)}
+.sec.yellow .sec-head p{color:#4a3c08}
+.cheats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.cheat{background:var(--card);border:3px solid var(--ink);border-radius:var(--r);padding:20px;display:grid;gap:12px;align-content:start;box-shadow:var(--shadow);transition:transform .2s}
+.cheat:hover{transform:translate(-2px,-2px) rotate(-.6deg)}
+.cheat-ic{width:52px;height:52px;border-radius:14px;background:var(--paper);display:grid;place-items:center}
+.cheat-ic svg.i{width:28px;height:28px}
+.cheat h3{font-size:1.1rem}
+.verdict{display:inline-flex;align-items:center;gap:6px;justify-self:start;font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px;background:var(--stop);color:#fff}
+.verdict svg.i{width:14px;height:14px;stroke-width:3}
+.cheat p{font-size:.95rem;color:var(--mute);line-height:1.45}
+
+/* ---------- BUILDERS ---------- */
+.build{border:3px solid var(--ink);border-radius:var(--r);background:var(--card);overflow:hidden}
+.build summary{list-style:none;cursor:pointer;padding:22px clamp(18px,3vw,28px);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.build summary::-webkit-details-marker{display:none}
+.build summary h3{font-size:clamp(1.3rem,2.6vw,1.7rem);font-weight:900}
+.build summary p{color:var(--mute);margin-top:4px}
+.plus{width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--sun);display:grid;place-items:center;flex:none;transition:transform .3s}
+.build[open] .plus{transform:rotate(45deg)}
+.build-body{padding:0 clamp(18px,3vw,28px) clamp(20px,3vw,28px);display:grid;gap:22px}
+.pins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pinbox{border:2px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.pinbox h4{margin:0 0 10px;font-family:var(--mono);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.pinbox h4 i{width:12px;height:12px;border-radius:3px;background:var(--sun);border:2px solid var(--ink)}
+.pinbox.b h4 i{background:var(--ink)}
+.pinbox table{width:100%;border-collapse:collapse;font-size:.92rem}
+.pinbox td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
+.pinbox td:first-child{font-weight:700;padding-right:12px;white-space:nowrap}
+.pinbox td code{font-family:var(--mono);font-size:.82rem;background:var(--paper);padding:1px 6px;border-radius:5px}
+.codewrap{overflow-x:auto;border-radius:16px;background:var(--ink)}
+pre{margin:0;padding:18px 20px;color:#DDE2EE;font-family:var(--mono);font-size:.84rem;line-height:1.6}
+pre .c{color:#7D8499}pre .k{color:var(--sun)}pre .s{color:#9BF0C3}
+.note{font-size:.92rem;color:var(--mute)}
+
+/* ---------- FOOTER ---------- */
+footer{background:var(--ink);color:#fff;padding-block:56px 40px;position:relative}
+footer::before{content:"";position:absolute;left:0;right:0;top:0;height:16px;background:repeating-linear-gradient(-45deg,var(--ink) 0 16px,var(--sun) 16px 32px)}
+.foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px}
+.foot .big{font-family:var(--display);font-weight:900;font-stretch:125%;font-size:clamp(2.6rem,9vw,6rem);line-height:.9;color:var(--sun)}
+.foot p{color:var(--mute-ink);margin-top:10px;font-size:1.1rem}
+.foot a{color:var(--sun);font-family:var(--mono);font-size:.84rem;font-weight:700;text-decoration:none;border:2px solid var(--sun);border-radius:99px;padding:9px 16px;display:inline-flex;gap:8px;align-items:center}
+.foot a:hover{background:var(--sun);color:var(--ink)}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:980px){
+  .cheats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:36px}
+  .flow::before,.runner{display:none}
+}
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:minmax(0,1fr)}
+  .rule-wrap{grid-template-columns:minmax(0,1fr)}
+  .rule-wrap .sec-head{margin-bottom:8px}
+  .lede{max-width:40ch}
+  .pair{grid-template-columns:minmax(0,1fr)}
+  .bridge{width:auto;padding:18px 0;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:14px}
+  .bridge svg{transform:rotate(90deg);width:110px;height:52px;grid-row:span 2}
+  .bridge b,.bridge span{text-align:left}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  .toplinks a:not(.gh){display:none}
+  .controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .start{grid-column:1 / -1;justify-self:center;width:76px;height:76px}
+  .tog{flex-direction:column;align-items:flex-start;gap:8px}
+  .scene{min-height:0}
+  .flow{grid-template-columns:minmax(0,1fr);row-gap:22px}
+  .step{grid-template-columns:76px minmax(0,1fr);column-gap:16px;row-gap:4px;align-items:start}
+  .step-ic{grid-row:span 4}
+  .loop{grid-template-columns:minmax(0,1fr)}
+  .ecg{width:100%}
+  .rule{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .rule .ax.corner{display:none}
+  .ax.row{grid-column:1 / -1;justify-content:flex-start;text-align:left;padding:8px 0 0}
+  .cell{padding:16px 10px}
+  .cell b{font-size:1.1rem}
+  .cheats{grid-template-columns:minmax(0,1fr)}
+  .pins{grid-template-columns:minmax(0,1fr)}
+  .lcd{gap:10px;padding:10px 12px}
+  .lcd-main{font-size:.92rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  .runner{display:none}
+  .ecg .beat{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-helmet" viewBox="0 0 24 24"><path d="M3 18v-3a9 9 0 0 1 18 0v3z"/><path d="M12.5 11.5H21"/></symbol>
+    <symbol id="i-magnet" viewBox="0 0 24 24"><path d="M6 3v8a6 6 0 0 0 12 0V3h-4v8a2 2 0 0 1-4 0V3z"/><path d="M6 7h4M14 7h4"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.5"/><path d="M5 12a7 7 0 0 1 7 7M5 6a13 13 0 0 1 13 13"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4a1.5 1.5 0 0 1 3 0v6M14 10V5.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 4 16l-1-3.2a1.5 1.5 0 0 1 2.7-1.2L8 14"/></symbol>
+    <symbol id="i-seat" viewBox="0 0 24 24"><path d="M5 12v-1a7 7 0 0 1 14 0v1z"/><path d="M12 8.5h7"/><path d="M2 16h20M6 16v4M18 16v4"/></symbol>
+    <symbol id="i-nobatt" viewBox="0 0 24 24"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10.5v3M3 3l18 18"/></symbol>
+    <symbol id="i-friend" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16.5 14a5 5 0 0 1 5 5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 7a8 8 0 1 0 11.2 0"/></symbol>
+    <symbol id="i-pad" viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="3"/><path d="M12 3v7M8.5 7 12 10.5 15.5 7"/></symbol>
+    <symbol id="i-hall" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="10" rx="2"/><path d="M9 13v8M12 13v8M15 13v8"/><circle cx="12" cy="8" r="1.6"/></symbol>
+    <symbol id="i-relay" viewBox="0 0 24 24"><path d="M2 16h4l9-7"/><path d="M17 16h5"/><circle cx="6" cy="16" r="1.6"/><circle cx="17" cy="16" r="1.6"/><rect x="5" y="3" width="6" height="4" rx="1"/></symbol>
+    <symbol id="i-batt" viewBox="0 0 24 24"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10.5v3M6 12h3M7.5 10.5v3M12.5 12h3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="5" cy="16" r="3.5"/><circle cx="19" cy="16" r="3.5"/><path d="M5 16l4-6h6l4 6M9 10l-1.5-3H5M15 10l1-4h3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <nav class="topbar" aria-label="Main">
+      <a class="brand" href="#top" aria-label="Helmate home">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 30v-6a16 16 0 0 1 32 0v6z" fill="#151823"/><path d="M21 17h15v8H21a4 4 0 0 1 0-8z" fill="#FFC72C"/><path d="M8 22a12 12 0 0 1 9-10" stroke="#FFC72C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        HELMATE
+      </a>
+      <div class="toplinks">
+        <a href="#pair">Inside</a>
+        <a href="#flow">How it talks</a>
+        <a href="#cheat">Try to cheat</a>
+        <a class="gh" href="https://github.com/Pruthviii23/Helmate">GitHub</a>
+      </div>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <h1>No helmet.<br><span class="plate">No ride.</span></h1>
+        <p class="lede">Helmate is a helmet that holds your bike's keys. Wear it, click the strap, and the bike starts. Skip either one and it stays locked.</p>
+        <div class="hint">
+          <svg viewBox="0 0 46 20" aria-hidden="true"><path d="M2 10c10-8 22 8 34 0M30 3l7 7-7 7"/></svg>
+          Try it yourself
+        </div>
+      </div>
+
+      <!-- ===== LIVE SIMULATOR ===== -->
+      <div class="stage" id="stage" aria-label="Helmate simulator">
+        <div class="lcd" role="status" aria-live="polite">
+          <span class="lcd-dot" aria-hidden="true"></span>
+          <div class="lcd-text">
+            <span class="lcd-main" id="lcdMain">LOCKED</span>
+            <span class="lcd-sub" id="lcdSub">Put the helmet on</span>
+          </div>
+          <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </div>
+
+        <div class="scene" aria-hidden="true">
+          <!-- rider + helmet -->
+          <svg viewBox="0 -140 240 402">
+            <g>
+              <path d="M30 262c6-26 40-38 90-38s84 12 90 38z" fill="#3D4766"/>
+              <rect x="100" y="196" width="40" height="40" rx="10" fill="var(--skin-2)"/>
+              <ellipse cx="122" cy="148" rx="56" ry="64" fill="var(--skin)"/>
+              <circle cx="152" cy="140" r="5" fill="#151823"/>
+              <path d="M150 172q10 6 20 0" stroke="#151823" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+              <path d="M70 120c4-42 34-62 64-60 26 2 44 18 50 40-30-14-74-6-114 20z" fill="#2B2116"/>
+            </g>
+            <g class="helmet-pos">
+              <!-- straps -->
+              <path d="M74 168 L100 230" stroke="#151823" stroke-width="6" stroke-linecap="round"/>
+              <path d="M152 186 L134 230" stroke="#151823" stroke-width="6" stroke-linecap="round"/>
+              <!-- shell -->
+              <path d="M34 172C24 98 66 44 124 42c56-2 90 40 90 94v42c0 12-8 20-20 20h-36c-10 0-16-6-18-14l-6-16z" fill="var(--sun)" stroke="#151823" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M146 90c32-4 60 12 66 40v18h-64c-10-18-12-40-2-58z" fill="#1E2A4A" stroke="#151823" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M160 100c18 0 32 8 38 20" stroke="#8FB4FF" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+              <path d="M58 84c24-22 70-30 104-14" stroke="#151823" stroke-width="10" fill="none" stroke-linecap="round"/>
+              <!-- FSR pad (x-ray) -->
+              <circle cx="104" cy="64" r="15" fill="#fff" stroke="#151823" stroke-width="2.5" stroke-dasharray="4 3"/>
+              <circle class="fsr-ring" cx="104" cy="64" r="7"/>
+              <circle class="fsr" cx="104" cy="64" r="7"/>
+              <text class="tag" x="22" y="40">PRESSURE PAD</text>
+              <path d="M62 44 L92 58" stroke="#5B6173" stroke-width="1.5"/>
+              <!-- buckle -->
+              <g class="buckle-l"><rect x="88" y="226" width="22" height="16" rx="4" fill="var(--stop)" stroke="#151823" stroke-width="3"/><rect x="88" y="226" width="11" height="16" rx="4" fill="var(--wave)"/><rect x="88" y="226" width="22" height="16" rx="4" fill="none" stroke="#151823" stroke-width="3"/></g>
+              <g class="buckle-r"><rect x="110" y="226" width="24" height="16" rx="4" fill="#2E3446" stroke="#151823" stroke-width="3"/><circle class="hall-led" cx="124" cy="234" r="3.5"/></g>
+              <path class="click-burst" d="M110 214v-8M98 218l-5-6M122 218l5-6"/>
+              <text class="tag" x="142" y="246">STRAP</text>
+            </g>
+          </svg>
+
+          <!-- radio link -->
+          <svg viewBox="0 0 100 80">
+            <text class="link-label" x="50" y="22" text-anchor="middle">RADIO</text>
+            <path class="link-line" d="M4 44H96"/>
+            <circle class="pkt" cx="10" cy="44" r="5"/>
+            <circle class="pkt" cx="10" cy="44" r="5"/>
+            <circle class="pkt" cx="10" cy="44" r="5"/>
+            <path class="link-x" d="M43 37l14 14M57 37 43 51"/>
+          </svg>
+
+          <!-- bike -->
+          <svg viewBox="0 0 320 210">
+            <polygon class="beam" points="252,98 330,72 330,140 252,112"/>
+            <circle class="puff" cx="40" cy="172" r="7"/>
+            <circle class="puff" cx="40" cy="172" r="7"/>
+            <circle class="puff" cx="40" cy="172" r="7"/>
+            <g class="bike-body">
+              <path d="M44 172 L118 166" stroke="#5B6173" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="72" cy="164" r="34" fill="none" stroke="#151823" stroke-width="11"/>
+              <circle cx="72" cy="164" r="7" fill="#151823"/>
+              <circle cx="252" cy="164" r="34" fill="none" stroke="#151823" stroke-width="11"/>
+              <circle cx="252" cy="164" r="7" fill="#151823"/>
+              <path d="M72 164 L146 140" stroke="#151823" stroke-width="8" stroke-linecap="round"/>
+              <path d="M226 100 L252 164" stroke="#151823" stroke-width="8" stroke-linecap="round"/>
+              <rect x="136" y="128" width="58" height="36" rx="8" fill="#2E3446"/>
+              <path d="M106 112 L210 96c14-2 22 8 18 20l-16 26-78 4z" fill="var(--wave)" stroke="#151823" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M150 106 L206 99" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+              <path d="M78 106 L148 98c8 0 9 9 2 11L84 118c-8 1-12-10-6-12z" fill="#151823"/>
+              <path d="M222 100 L214 78 L236 72" stroke="#151823" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <circle class="lamp" cx="244" cy="104" r="10" stroke="#151823" stroke-width="4"/>
+              <!-- lock badge -->
+              <g transform="translate(150 40)">
+                <circle class="lock-bg" cx="0" cy="0" r="22" stroke="#151823" stroke-width="3"/>
+                <path class="shackle" d="M-6 -2v-6a6 6 0 0 1 12 0v6" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <rect x="-9" y="-3" width="18" height="14" rx="3" fill="#fff"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div class="circuit" aria-hidden="true">
+          <span class="node"><svg class="i"><use href="#i-batt"/></svg>Battery</span>
+          <span class="relay">
+            <svg viewBox="0 0 86 30">
+              <path class="wire" d="M0 20H22M62 20H86"/>
+              <circle cx="22" cy="20" r="4" fill="#151823"/>
+              <circle cx="62" cy="20" r="4" fill="#151823"/>
+              <path class="lever" d="M22 20H62"/>
+            </svg>
+            <small>relay</small>
+          </span>
+          <span class="node out"><svg class="i"><use href="#i-bolt"/></svg>Self-start</span>
+        </div>
+
+        <div class="controls">
+          <button class="tog" id="tWear" type="button" aria-pressed="false">
+            <span class="knob" aria-hidden="true"></span>
+            <span class="tog-t"><b>Put it on</b><small>Pressure pad</small></span>
+          </button>
+          <button class="tog" id="tStrap" type="button" aria-pressed="false">
+            <span class="knob" aria-hidden="true"></span>
+            <span class="tog-t"><b>Click the strap</b><small>Magnet + sensor</small></span>
+          </button>
+          <button class="start" id="startBtn" type="button">
+            <svg class="i" aria-hidden="true"><use href="#i-power"/></svg>
+            <span id="startLabel">START</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== THE PAIR ===== -->
+  <section class="sec" id="pair">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">What's inside</span>
+        <h2>Two tiny brains. One handshake.</h2>
+        <p>One box lives in the helmet and checks that you're wearing it. The other lives on the bike and holds the power.</p>
+      </div>
+
+      <div class="pair">
+        <article class="unit h">
+          <div class="unit-top">
+            <h3>In the helmet</h3>
+            <span class="unit-badge"><svg class="i"><use href="#i-helmet"/></svg></span>
+          </div>
+          <p class="unit-job">Asks two questions: is a head inside, and is the strap shut?</p>
+          <ul class="parts">
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-chip"/></svg></span><div><b>ESP32-C3 SuperMini</b><span>The helmet's brain and radio</span></div><span class="have">In hand</span></li>
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-pad"/></svg></span><div><b>Pressure pad (FSR)</b><span>Sits in the lining, feels your head</span></div><span class="have">In hand</span></li>
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-hall"/></svg></span><div><b>Hall sensor</b><span>On one strap end, senses the magnet</span></div><span class="have">In hand</span></li>
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-magnet"/></svg></span><div><b>Magnet</b><span>On the other strap end</span></div><span class="have">In hand</span></li>
+          </ul>
+        </article>
+
+        <div class="bridge" aria-hidden="true">
+          <svg viewBox="0 0 170 80">
+            <path d="M0 40H34M136 40H170" stroke="var(--ink)" stroke-width="3" stroke-dasharray="3 6" stroke-linecap="round"/>
+            <circle cx="48" cy="40" r="9" fill="var(--wave)"/>
+            <path class="w" d="M66 26a20 20 0 0 1 0 28"/>
+            <path class="w" d="M84 16a34 34 0 0 1 0 48"/>
+            <path class="w" d="M102 6a48 48 0 0 1 0 68"/>
+            <circle cx="124" cy="40" r="9" fill="none" stroke="var(--wave)" stroke-width="3"/>
+          </svg>
+          <b>ESP-NOW<br>radio</b>
+          <span>Board to board.<br>No Wi-Fi, no phone.</span>
+        </div>
+
+        <article class="unit b">
+          <div class="unit-top">
+            <h3>On the bike</h3>
+            <span class="unit-badge"><svg class="i"><use href="#i-bike"/></svg></span>
+          </div>
+          <p class="unit-job">Listens for the helmet. No message, no power to the starter.</p>
+          <ul class="parts">
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-chip"/></svg></span><div><b>ESP32-C3 SuperMini</b><span>The bike's brain and radio</span></div><span class="have">In hand</span></li>
+            <li class="part"><span class="part-ic"><svg class="i"><use href="#i-relay"/></svg></span><div><b>Relay module</b><span>A switch on the self-start power line</span></div><span class="have">In hand</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="todo">
+        <b>Small extras to grab</b>
+        <span class="chip">10 kΩ resistor <i>for the pad</i></span>
+        <span class="chip">Small Li-ion cell + charger <i>helmet power</i></span>
+        <span class="chip">12 V → 5 V converter <i>bike power</i></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE FLOW ===== -->
+  <section class="sec dark" id="flow">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">How it talks</span>
+        <h2>From head to engine in six beats.</h2>
+        <p>The whole trip takes less time than it takes to find your keys.</p>
+      </div>
+
+      <ol class="flow">
+        <li class="runner" aria-hidden="true"></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-pad"/></svg></span><span class="step-n">01</span><h3>Wear it</h3><p>Your head presses the pad inside.</p><span class="tech">FSR</span></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-magnet"/></svg></span><span class="step-n">02</span><h3>Click it</h3><p>The strap closes. Magnet meets sensor.</p><span class="tech">Hall</span></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-chip"/></svg></span><span class="step-n">03</span><h3>Check</h3><p>Helmet brain asks: both yes?</p><span class="tech">ESP32-C3</span></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-wave"/></svg></span><span class="step-n">04</span><h3>Ping</h3><p>"Helmet on" goes to the bike, twice a second.</p><span class="tech">ESP-NOW</span></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-unlock"/></svg></span><span class="step-n">05</span><h3>Unlock</h3><p>Bike brain closes the relay.</p><span class="tech">Relay</span></li>
+        <li class="step"><span class="step-ic"><svg class="i"><use href="#i-bolt"/></svg></span><span class="step-n">06</span><h3>Ride</h3><p>Self-start has power. Off you go.</p><span class="tech">Vroom</span></li>
+      </ol>
+
+      <div class="loop">
+        <svg class="ecg" viewBox="0 0 320 80" aria-hidden="true">
+          <path class="flat" d="M226 44H316"/>
+          <path class="beat" d="M4 44H30l8-18 10 36 8-18h30l8-18 10 36 8-18h30l8-18 10 36 8-18h34"/>
+          <path d="M226 28v32" stroke="#E5372B" stroke-width="3" stroke-dasharray="4 4"/>
+        </svg>
+        <div>
+          <h3>Pings stop? <em>Bike locks.</em></h3>
+          <p>The bike doesn't wait for a "helmet off" message. It just listens for the steady ping. If the helmet goes quiet for about a second and a half, the relay opens and the self-start goes dead.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE RULE ===== -->
+  <section class="sec" id="rule">
+    <div class="wrap">
+      <div class="rule-wrap">
+      <div class="sec-head">
+        <span class="eyebrow">The one rule</span>
+        <h2>Both, or nothing.</h2>
+        <p>Four ways to wear a helmet. Only one of them starts the bike.</p>
+      </div>
+      <div class="rule">
+        <span class="ax corner"></span>
+        <span class="ax col"><svg class="i"><use href="#i-magnet"/></svg>Strap open</span>
+        <span class="ax col"><svg class="i"><use href="#i-magnet"/></svg>Strap clicked</span>
+
+        <span class="ax row"><svg class="i"><use href="#i-pad"/></svg>Head in</span>
+        <div class="cell"><span class="big"><svg class="i"><use href="#i-lock"/></svg></span><b>Locked</b><span>On your head, but loose</span></div>
+        <div class="cell yes"><span class="big"><svg class="i"><use href="#i-check"/></svg></span><b>Starts</b><span>Worn right. Ride on.</span></div>
+
+        <span class="ax row"><svg class="i"><use href="#i-pad"/></svg>No head</span>
+        <div class="cell"><span class="big"><svg class="i"><use href="#i-lock"/></svg></span><b>Locked</b><span>Helmet's off</span></div>
+        <div class="cell"><span class="big"><svg class="i"><use href="#i-lock"/></svg></span><b>Locked</b><span>Buckled, but empty</span></div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHEAT ===== -->
+  <section class="sec yellow" id="cheat">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Go on</span>
+        <h2>Try to fool it.</h2>
+        <p>Every shortcut people try, and why it doesn't work.</p>
+      </div>
+      <div class="cheats">
+        <article class="cheat">
+          <span class="cheat-ic"><svg class="i"><use href="#i-seat"/></svg></span>
+          <h3>Buckle it and leave it on the seat</h3>
+          <span class="verdict"><svg class="i"><use href="#i-x"/></svg>Stays locked</span>
+          <p>The strap is shut, but nobody's head is pressing the pad.</p>
+        </article>
+        <article class="cheat">
+          <span class="cheat-ic"><svg class="i"><use href="#i-hand"/></svg></span>
+          <h3>Press the pad with your hand</h3>
+          <span class="verdict"><svg class="i"><use href="#i-x"/></svg>Stays locked</span>
+          <p>The pad feels pressure, but the strap is still open.</p>
+        </article>
+        <article class="cheat">
+          <span class="cheat-ic"><svg class="i"><use href="#i-nobatt"/></svg></span>
+          <h3>Let the helmet battery die</h3>
+          <span class="verdict"><svg class="i"><use href="#i-x"/></svg>Stays locked</span>
+          <p>No battery means no ping. No ping means no start.</p>
+        </article>
+        <article class="cheat">
+          <span class="cheat-ic"><svg class="i"><use href="#i-friend"/></svg></span>
+          <h3>Use a friend's Helmate</h3>
+          <span class="verdict"><svg class="i"><use href="#i-x"/></svg>Stays locked</span>
+          <p>Each bike is paired with one helmet and ignores the rest.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BUILDERS ===== -->
+  <section class="sec" id="build">
+    <div class="wrap">
+      <details class="build">
+        <summary>
+          <div>
+            <h3>For the builders</h3>
+            <p>Wiring, pins and the logic. Open it if you're holding a soldering iron.</p>
+          </div>
+          <span class="plus" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span>
+        </summary>
+        <div class="build-body">
+          <div class="pins">
+            <div class="pinbox">
+              <h4><i></i>Helmet board</h4>
+              <table>
+                <tr><td>Pressure pad</td><td>One leg to <code>3V3</code>, other leg to <code>GPIO3</code>. Add a 10 kΩ from <code>GPIO3</code> to <code>GND</code>. Reading goes up when pressed.</td></tr>
+                <tr><td>Hall sensor</td><td><code>VCC</code> to <code>3V3</code>, <code>GND</code> to <code>GND</code>, <code>OUT</code> to <code>GPIO4</code>. Most modules read LOW when the magnet is close.</td></tr>
+                <tr><td>Magnet</td><td>Glue it to the other strap end so it sits on the sensor when buckled.</td></tr>
+                <tr><td>Power</td><td>Small Li-ion cell into the SuperMini's 5V/battery input.</td></tr>
+              </table>
+            </div>
+            <div class="pinbox b">
+              <h4><i></i>Bike board</h4>
+              <table>
+                <tr><td>Relay IN</td><td><code>GPIO5</code>. Relay <code>VCC</code> to <code>5V</code>, <code>GND</code> to <code>GND</code>.</td></tr>
+                <tr><td>Relay contacts</td><td>Put <code>COM</code> and <code>NO</code> in the self-start wire. Normally open means locked by default.</td></tr>
+                <tr><td>Power</td><td>Bike 12 V through a 12 V → 5 V converter into the <code>5V</code> pin.</td></tr>
+                <tr><td>Pairing</td><td>The bike only accepts messages from its own helmet's MAC address.</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="codewrap">
+<pre><span class="c">// helmet: every 500 ms</span>
+<span class="k">bool</span> headIn  = analogRead(<span class="s">3</span>) &gt; PAD_THRESHOLD;
+<span class="k">bool</span> clicked = digitalRead(<span class="s">4</span>) == LOW;
+<span class="k">if</span> (headIn &amp;&amp; clicked) esp_now_send(bikeMac, <span class="s">"WORN"</span>);
+
+<span class="c">// bike: on every message from helmetMac</span>
+lastPing = millis();
+
+<span class="c">// bike: main loop</span>
+<span class="k">bool</span> unlocked = millis() - lastPing &lt; <span class="s">1500</span>;
+digitalWrite(<span class="s">5</span>, unlocked ? HIGH : LOW);   <span class="c">// relay closed only while pings arrive</span></pre>
+          </div>
+          <p class="note">Pin numbers are suggestions. Avoid GPIO 2, 8 and 9 on the SuperMini, since they affect boot. Tune <code>PAD_THRESHOLD</code> by printing the pad reading with and without the helmet on.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="big">HELMATE</div>
+      <p>Wear it to ride it.</p>
+    </div>
+    <a href="https://github.com/Pruthviii23/Helmate">View on GitHub <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var tWear = document.getElementById('tWear');
+  var tStrap = document.getElementById('tStrap');
+  var btn = document.getElementById('startBtn');
+  var lbl = document.getElementById('startLabel');
+  var main = document.getElementById('lcdMain');
+  var sub = document.getElementById('lcdSub');
+  var s = {worn:false, strap:false, running:false};
+  var flashT = null;
+
+  function ok(){ return s.worn && s.strap; }
+
+  function idleText(){
+    if (s.running) return ['ENGINE ON', 'Ride safe'];
+    if (ok()) return ['UNLOCKED', 'Helmet pinging · press START'];
+    if (!s.worn && !s.strap) return ['LOCKED', 'Put the helmet on'];
+    if (s.worn && !s.strap) return ['LOCKED', 'Now click the strap'];
+    return ['LOCKED', 'Strap clicked, but no head inside'];
+  }
+  function show(t){ main.textContent = t[0]; sub.textContent = t[1]; }
+  function flash(t, ms){
+    clearTimeout(flashT);
+    show(t);
+    flashT = setTimeout(function(){ show(idleText()); }, ms || 1600);
+  }
+  function render(){
+    stage.classList.toggle('worn', s.worn);
+    stage.classList.toggle('strapped', s.strap);
+    stage.classList.toggle('ok', ok());
+    stage.classList.toggle('running', s.running);
+    tWear.setAttribute('aria-pressed', s.worn);
+    tStrap.setAttribute('aria-pressed', s.strap);
+    lbl.textContent = s.running ? 'STOP' : 'START';
+  }
+  function update(){
+    var wasRunning = s.running;
+    if (!ok()) s.running = false;
+    render();
+    if (wasRunning && !s.running) flash(['SIGNAL LOST', 'Relay open · engine cut'], 1800);
+    else { clearTimeout(flashT); show(idleText()); }
+  }
+  tWear.addEventListener('click', function(){ s.worn = !s.worn; update(); });
+  tStrap.addEventListener('click', function(){ s.strap = !s.strap; update(); });
+  btn.addEventListener('click', function(){
+    if (s.running){ s.running = false; render(); show(idleText()); return; }
+    if (!ok()){
+      stage.classList.remove('denied'); void stage.offsetWidth; stage.classList.add('denied');
+      var why = !s.worn && !s.strap ? 'Wear it and click the strap' : !s.worn ? 'Pad says nobody is wearing it' : 'Strap is still open';
+      flash(['NO HELMET, NO START', why], 1800);
+      return;
+    }
+    s.running = true; render(); show(idleText());
+  });
+  stage.addEventListener('animationend', function(e){ if (e.animationName === 'shake') stage.classList.remove('denied'); });
+  render(); show(idleText());
+})();
+</script>
+</body>
+</html>
