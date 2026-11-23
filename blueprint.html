@@ -1,0 +1,761 @@
+<title>Helmate Blueprint</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a drawing set. Title block on top, then numbered sheets, each framed like a print with its own sheet tag. */
+:root{
+  --bg:#05070a;        /* drafting black */
+  --bg2:#0a0e13;       /* box fill */
+  --ink:#eef2f6;       /* line + text white */
+  --dim:#8d98a5;       /* secondary text */
+  --faint:#2b333d;     /* frames, rules */
+  --cyan:#8fd8ff;      /* annotations, dimensions, radio */
+  --amber:#ffbf5a;     /* 12 V high-current path */
+  --gmin:rgba(238,242,246,.035);
+  --gmaj:rgba(238,242,246,.085);
+  --f-disp:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(var(--gmaj) 1px,transparent 1px),
+    linear-gradient(90deg,var(--gmaj) 1px,transparent 1px),
+    linear-gradient(var(--gmin) 1px,transparent 1px),
+    linear-gradient(90deg,var(--gmin) 1px,transparent 1px);
+  background-size:80px 80px,80px 80px,16px 16px,16px 16px;
+  color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:32px 64px;
+}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:40px}
+a{color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+code,kbd{font-family:var(--f-mono);font-size:.86em;color:var(--cyan)}
+
+/* ---------- title block ---------- */
+.tb{border:1.5px solid var(--ink);display:grid;grid-template-columns:minmax(0,2.2fr) repeat(4,minmax(0,1fr))}
+.tb>div{border-right:1px solid var(--faint);padding:12px 14px;min-width:0}
+.tb>div:last-child{border-right:0}
+.tb .lab{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:block}
+.tb .val{font-family:var(--f-mono);font-size:14px}
+.tb h1{font-family:var(--f-disp);font-stretch:68%;font-weight:800;font-size:clamp(40px,7vw,68px);line-height:.95;margin:4px 0 6px;letter-spacing:.01em;text-transform:uppercase}
+.tb p{margin:0;color:var(--dim);max-width:60ch}
+.tb .main{grid-row:span 2}
+.tb .cell{border-bottom:1px solid var(--faint)}
+.tb .cell:nth-last-child(-n+4){border-bottom:0}
+
+.index{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--f-mono);font-size:12px}
+.index a{color:var(--ink);text-decoration:none;border:1px solid var(--faint);padding:5px 10px;background:var(--bg)}
+.index a:hover{border-color:var(--cyan);color:var(--cyan)}
+.index a b{color:var(--cyan);font-weight:500;margin-right:6px}
+
+/* ---------- sheets ---------- */
+.sheet{position:relative;border:1px solid var(--faint);background:rgba(5,7,10,.55);padding:28px clamp(16px,3vw,32px) 28px;display:grid;gap:20px;min-width:0}
+.sheet::before,.sheet::after{content:"";position:absolute;width:14px;height:14px;border:1.5px solid var(--ink)}
+.sheet::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.sheet::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.sh-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px;border-bottom:1px solid var(--faint);padding-bottom:12px}
+.sh-head h2{font-family:var(--f-disp);font-stretch:72%;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:28px;line-height:1.1;margin:0;text-wrap:balance}
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.tag b{color:var(--ink);font-weight:500}
+.lede{margin:0;color:var(--dim);max-width:70ch}
+
+.draw{overflow-x:auto;border:1px solid var(--faint);background:var(--bg)}
+.draw svg{display:block;width:100%;min-width:780px;height:auto}
+.cap{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:6px 0 0}
+
+/* svg drawing language */
+.w{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.w.hv{stroke:var(--amber);stroke-width:2.2}
+.w.rf{stroke:var(--cyan);stroke-dasharray:5 5}
+.w.fr{stroke:var(--faint);stroke-dasharray:6 5}
+.w.cy{stroke:var(--cyan);stroke-width:1.1}
+.box{fill:var(--bg2);stroke:var(--ink);stroke-width:1.6}
+.box.cy{stroke:var(--cyan)}
+.box.hv{stroke:var(--amber)}
+.dot{fill:var(--ink)}
+.dot.hv{fill:var(--amber)}
+.sym{color:var(--ink)}
+.sym.hv{color:var(--amber)}
+.sym.cy{color:var(--cyan)}
+svg text{font-family:var(--f-mono);font-size:12px;fill:var(--ink)}
+svg .ds{font-family:var(--f-disp);font-stretch:75%;font-weight:700;font-size:14px;letter-spacing:.04em}
+svg .pn{font-size:11px;fill:var(--dim)}
+svg .an{font-size:11px;fill:var(--cyan)}
+svg .am{fill:var(--amber)}
+svg .big{font-family:var(--f-disp);font-stretch:70%;font-weight:700;font-size:20px;fill:var(--faint);letter-spacing:.08em}
+svg .fill-bg{fill:var(--bg)}
+svg .mk{fill:var(--ink)}
+svg .mk.cy{fill:var(--cyan)}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;font-family:var(--f-mono);font-size:11.5px;color:var(--dim)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{display:inline-block;width:28px;height:0;border-top:1.6px solid var(--ink)}
+.legend i.hv{border-top:2.2px solid var(--amber)}
+.legend i.rf{border-top:1.6px dashed var(--cyan)}
+.legend i.cy{border-top:1px solid var(--cyan)}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.note{border-left:1.5px solid var(--cyan);padding:2px 0 2px 14px;min-width:0}
+.note.hv{border-left-color:var(--amber)}
+.note h3{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 4px;color:var(--cyan);font-weight:500}
+.note.hv h3{color:var(--amber)}
+.note p{margin:0;font-size:14px;color:var(--ink)}
+.note p+p{margin-top:6px}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--faint);background:var(--bg)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--faint);vertical-align:top}
+th{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:500;background:var(--bg2)}
+tr:last-child td{border-bottom:0}
+td.ref{font-family:var(--f-mono);white-space:nowrap;color:var(--cyan)}
+td.mono{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+.st{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--faint);white-space:nowrap}
+.st.have{border-color:var(--ink);color:var(--ink)}
+.st.get{border-color:var(--amber);color:var(--amber)}
+.st.opt{color:var(--dim)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.two>div{min-width:0;display:grid;gap:8px;align-content:start}
+.sub{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:0}
+.ok{color:var(--ink)} .no{color:var(--dim)}
+
+/* code */
+.code{border:1px solid var(--faint);background:var(--bg);min-width:0}
+.code header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--faint);font-family:var(--f-mono);font-size:12px}
+.code header span{color:var(--dim)}
+.code header b{color:var(--ink);font-weight:500}
+.copy{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--cyan);border:1px solid var(--cyan);padding:4px 10px;cursor:pointer}
+.copy:hover{background:var(--cyan);color:var(--bg)}
+pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:12.5px;line-height:1.55;color:var(--ink);tab-size:2}
+pre .c{color:var(--dim)} pre .k{color:var(--cyan)} pre .s{color:var(--amber)}
+
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:st;border:1px solid var(--faint);background:var(--bg)}
+.steps li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;padding:14px 16px;border-bottom:1px solid var(--faint);counter-increment:st}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(st,decimal-leading-zero);font-family:var(--f-disp);font-stretch:70%;font-weight:700;font-size:26px;line-height:1;color:var(--cyan)}
+.steps b{display:block;font-weight:600}
+.steps p{margin:2px 0 0;color:var(--dim);font-size:14px}
+.steps .pass{display:inline-block;margin-top:6px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink);border:1px dashed var(--faint);padding:2px 8px}
+
+footer{font-family:var(--f-mono);font-size:11px;color:var(--dim);letter-spacing:.08em;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid var(--faint);padding-top:12px}
+
+@media (max-width:820px){
+  .tb{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tb .main{grid-column:1/-1;grid-row:auto;border-right:0;border-bottom:1px solid var(--faint)}
+  .tb .cell{border-bottom:1px solid var(--faint)}
+  .tb .cell:nth-child(odd){border-right:0}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+}
+</style>
+
+<!-- shared schematic symbols, drawn around (0,0), pins at x = ±30 unless noted -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="s-res" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M-30 0H-18L-15 -7L-9 7L-3 -7L3 7L9 -7L15 7L18 0H30"/></g>
+    <g id="s-fsr" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M-30 0H-16M16 0H30"/><rect x="-16" y="-7" width="32" height="14"/><path d="M-13 12L12 -12H19"/></g>
+    <g id="s-diode" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M-30 0H-8M8 0H30M8 -9V9"/><path d="M-8 -8L8 0L-8 8Z"/></g>
+    <g id="s-fuse" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M-30 0H30"/><rect x="-14" y="-6" width="28" height="12"/></g>
+    <g id="s-gnd" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M0 0V10M-11 10H11M-6.5 15H6.5M-2.5 20H2.5"/></g>
+    <g id="s-coil" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M0 -40V-24M0 24V40M-12 24L12 -24"/><rect x="-12" y="-24" width="24" height="48"/></g>
+    <g id="s-sol" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M0 -50V-30a7.5 7.5 0 0 1 0 15a7.5 7.5 0 0 1 0 15a7.5 7.5 0 0 1 0 15a7.5 7.5 0 0 1 0 15V50"/><path d="M14 -32V32M19 -32V32" stroke-width="1.4"/></g>
+    <g id="s-npn" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="2" cy="0" r="21"/><path d="M-30 0H-10M-10 -13V13M-10 -6L10 -19V-30M-10 6L10 19V30"/><path d="M9 19.3L1 18.6L5.6 12Z" fill="currentColor"/></g>
+    <g id="s-sw" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M-30 0H-14M14 0H30M-10 -1.5L12 -13"/><circle cx="-12" cy="0" r="2.4"/><circle cx="12" cy="0" r="2.4"/></g>
+    <g id="s-btn" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M-30 0H-14M14 0H30M-17 -9H17M0 -9V-19M-7 -19H7"/><circle cx="-12" cy="0" r="2.4"/><circle cx="12" cy="0" r="2.4"/></g>
+    <g id="s-bat" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M0 -30V-9M0 9V30M-15 -9H15M-15 3H15" stroke-width="1.6"/><path d="M-8 -3H8M-8 9H8" stroke-width="3.2"/></g>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10Z"/></marker>
+    <marker id="arrc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk cy" d="M0 0L10 5L0 10Z"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <!-- ===== TITLE BLOCK ===== -->
+  <header class="tb">
+    <div class="main">
+      <span class="lab">Project</span>
+      <h1>Helmate</h1>
+      <p>Bench prototype. The helmet checks for a head and a latched strap, then pings the bike. While the pings keep coming, the bike side closes a relay and lets a solenoid fire in place of the starter.</p>
+    </div>
+    <div class="cell"><span class="lab">Drawing</span><span class="val">Bench wiring set</span></div>
+    <div class="cell"><span class="lab">Rev</span><span class="val">A</span></div>
+    <div class="cell"><span class="lab">Date</span><span class="val">2026-11-22</span></div>
+    <div class="cell"><span class="lab">Sheets</span><span class="val">08</span></div>
+    <div class="cell"><span class="lab">Logic</span><span class="val">3.3 V</span></div>
+    <div class="cell"><span class="lab">Supplies</span><span class="val">3.7 V · 5 V · 12 V</span></div>
+    <div class="cell"><span class="lab">Radio</span><span class="val">ESP-NOW 2.4 GHz</span></div>
+    <div class="cell"><span class="lab">Scale</span><span class="val">NTS</span></div>
+  </header>
+
+  <nav class="index" aria-label="Sheet index">
+    <a href="#overview"><b>01</b>System overview</a>
+    <a href="#helmet"><b>02</b>Helmet schematic</a>
+    <a href="#bike"><b>03</b>Bike bench schematic</a>
+    <a href="#layout"><b>04</b>Physical layout</a>
+    <a href="#wiring"><b>05</b>Wiring tables</a>
+    <a href="#logic"><b>06</b>Logic + firmware</a>
+    <a href="#parts"><b>07</b>Parts list</a>
+    <a href="#bringup"><b>08</b>Bring-up + safety</a>
+  </nav>
+
+  <!-- ===== 01 OVERVIEW ===== -->
+  <section class="sheet" id="overview">
+    <div class="sh-head"><h2>System overview</h2><span class="tag">Sheet <b>01</b> / 08</span></div>
+    <p class="lede">Two separate boards with no wire between them. The helmet only ever says one thing, "WORN". The bike never waits for "not worn". It just drops the relay when the pings stop.</p>
+    <div class="draw">
+      <svg viewBox="0 0 1100 250" role="img" aria-label="Block diagram: FSR and Hall sensor feed the helmet SuperMini, which sends ESP-NOW pings to the bike SuperMini, which drives a transistor, relay and solenoid.">
+        <rect class="w fr" x="20" y="24" width="390" height="200"/>
+        <text class="ds" x="34" y="46">HELMET UNIT</text>
+        <rect class="box" x="44" y="68" width="130" height="46"/>
+        <text x="58" y="88">RS1 FSR pad</text><text class="pn" x="58" y="104">head inside?</text>
+        <rect class="box" x="44" y="144" width="130" height="46"/>
+        <text x="58" y="164">U3 Hall + M1</text><text class="pn" x="58" y="180">strap latched?</text>
+        <rect class="box" x="240" y="96" width="140" height="70"/>
+        <text x="254" y="122">U2 SuperMini</text><text class="pn" x="254" y="140">helmet MCU</text><text class="pn" x="254" y="155">GPIO3 · GPIO4</text>
+        <path class="w" d="M174 91H205V118H238" marker-end="url(#arr)"/>
+        <path class="w" d="M174 167H205V144H238" marker-end="url(#arr)"/>
+        <text class="pn" x="240" y="200">BT1 Li-ion → U1 TP4056 → SW1</text>
+
+        <g class="pulse">
+          <path class="w rf" d="M424 108a32 32 0 0 1 0 48"/>
+          <path class="w rf" d="M444 94a52 52 0 0 1 0 76"/>
+          <path class="w rf" d="M464 80a72 72 0 0 1 0 104"/>
+        </g>
+        <path class="w rf" d="M430 132H535" marker-end="url(#arrc)"/>
+        <text class="an" x="480" y="70" text-anchor="middle">ESP-NOW</text>
+        <text class="an" x="480" y="206" text-anchor="middle">"WORN" every 500 ms</text>
+        <text class="an" x="480" y="222" text-anchor="middle">only if pad AND strap</text>
+
+        <rect class="w fr" x="550" y="24" width="530" height="200"/>
+        <text class="ds" x="564" y="46">BIKE BENCH UNIT</text>
+        <rect class="box" x="574" y="96" width="120" height="70"/>
+        <text x="588" y="122">U2 SuperMini</text><text class="pn" x="588" y="140">bike MCU</text><text class="pn" x="588" y="155">GPIO5 out</text>
+        <rect class="box" x="724" y="106" width="80" height="50"/>
+        <text x="738" y="128">Q1 NPN</text><text class="pn" x="738" y="144">driver</text>
+        <rect class="box" x="834" y="106" width="80" height="50"/>
+        <text x="848" y="128">K1 relay</text><text class="pn" x="848" y="144">5 V coil</text>
+        <rect class="box hv" x="944" y="96" width="120" height="70"/>
+        <text class="am" x="958" y="122">L1 solenoid</text><text class="pn" x="958" y="140">stands in for</text><text class="pn" x="958" y="155">the starter</text>
+        <path class="w" d="M694 131H722" marker-end="url(#arr)"/>
+        <path class="w" d="M804 131H832" marker-end="url(#arr)"/>
+        <path class="w hv" d="M914 131H942" marker-end="url(#arr)"/>
+        <text class="pn" x="574" y="196">J1 12 V → F1 → U1 buck → 5 V logic</text>
+        <text class="an am" x="1064" y="196" text-anchor="end">12 V → S1 START → K1 → L1</text>
+        <text class="an" x="1064" y="212" text-anchor="end">relay drops 1.5 s after the last ping</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i></i>signal / logic power</span>
+      <span><i class="hv"></i>12 V solenoid current path</span>
+      <span><i class="rf"></i>radio link</span>
+      <span><i class="cy"></i>dimension / annotation</span>
+    </div>
+  </section>
+
+  <!-- ===== 02 HELMET ===== -->
+  <section class="sheet" id="helmet">
+    <div class="sh-head"><h2>Helmet unit schematic</h2><span class="tag">Sheet <b>02</b> / 08</span></div>
+    <p class="lede">The pressure pad and R1 form a voltage divider. The ADC reads near 0 V with no head and climbs when the pad is squeezed. The Hall sensor pulls GPIO4 low when the strap magnet sits in front of it.</p>
+    <div class="draw">
+      <svg viewBox="0 0 1000 470" role="img" aria-label="Helmet schematic: Li-ion cell into TP4056 charger, through power switch to SuperMini 5V. FSR from 3V3 to GPIO3 with 10k to ground. Hall sensor VCC to 3V3, OUT to GPIO4, GND to ground. Magnet within 8 mm.">
+        <!-- battery -->
+        <use href="#s-bat" class="sym" transform="translate(90 190)"/>
+        <text class="ds" x="30" y="186">BT1</text>
+        <text x="104" y="166" class="pn">+</text>
+        <text x="90" y="286" text-anchor="middle" class="pn">Li-ion 1S 3.7 V</text>
+        <text x="90" y="302" text-anchor="middle" class="pn">500–1000 mAh</text>
+        <path class="w" d="M90 160V140H170M90 220V240H170"/>
+        <!-- TP4056 -->
+        <rect class="box" x="170" y="110" width="130" height="160"/>
+        <text class="ds" x="170" y="100">U1 TP4056 CHARGER</text>
+        <text class="pn" x="180" y="144">B+</text><text class="pn" x="180" y="244">B−</text>
+        <text class="pn" x="290" y="144" text-anchor="end">OUT+</text><text class="pn" x="290" y="244" text-anchor="end">OUT−</text>
+        <text x="235" y="188" text-anchor="middle">USB-C</text><text class="pn" x="235" y="204" text-anchor="middle">charge port</text>
+        <!-- switch -->
+        <path class="w" d="M300 140H330"/>
+        <use href="#s-sw" class="sym" transform="translate(360 140)"/>
+        <text class="ds" x="360" y="118" text-anchor="middle">SW1</text>
+        <text class="an" x="360" y="162" text-anchor="middle">power</text>
+        <path class="w" d="M390 140H440M300 240H440"/>
+        <circle class="dot" cx="400" cy="240" r="3.2"/>
+        <use href="#s-gnd" class="sym" transform="translate(400 240)"/>
+        <!-- SuperMini -->
+        <rect class="box" x="440" y="90" width="170" height="340"/>
+        <text class="ds" x="440" y="80">U2 ESP32-C3 SUPERMINI</text>
+        <text class="pn" x="450" y="144">5V</text><text class="pn" x="450" y="244">GND</text>
+        <text class="pn" x="600" y="124" text-anchor="end">3V3</text>
+        <text class="pn" x="600" y="224" text-anchor="end">GPIO3 · ADC</text>
+        <text class="pn" x="600" y="384" text-anchor="end">GPIO4</text>
+        <text class="big" x="525" y="320" text-anchor="middle">HELMET</text>
+        <!-- 3V3 rail -->
+        <path class="w" d="M610 120H780V350H800"/>
+        <text class="an" x="630" y="112">+3V3</text>
+        <circle class="dot" cx="700" cy="120" r="3.2"/>
+        <!-- FSR divider -->
+        <path class="w" d="M700 120V140"/>
+        <use href="#s-fsr" class="sym cy" transform="translate(700 170) rotate(90)"/>
+        <text class="ds" x="722" y="166">RS1</text><text class="an" x="722" y="182">FSR pressure pad</text>
+        <path class="w" d="M700 200V235M610 220H700"/>
+        <circle class="dot" cx="700" cy="220" r="3.2"/>
+        <text class="an" x="640" y="212">PAD_V</text>
+        <use href="#s-res" class="sym" transform="translate(700 265) rotate(90)"/>
+        <text class="ds" x="716" y="262">R1</text><text class="pn" x="716" y="278">10 kΩ</text>
+        <use href="#s-gnd" class="sym" transform="translate(700 295)"/>
+        <!-- Hall -->
+        <path class="w" d="M610 380H800M800 410H760"/>
+        <use href="#s-gnd" class="sym" transform="translate(760 410)"/>
+        <rect class="box" x="800" y="330" width="110" height="110"/>
+        <text class="ds" x="800" y="320">U3 HALL A3144</text>
+        <text class="pn" x="810" y="354">VCC</text><text class="pn" x="810" y="384">OUT</text><text class="pn" x="810" y="414">GND</text>
+        <!-- magnet + dimension -->
+        <rect x="938" y="355" width="30" height="25" style="fill:var(--bg2);stroke:var(--cyan);stroke-width:1.4"/>
+        <rect x="938" y="380" width="30" height="25" style="fill:var(--cyan);fill-opacity:.18;stroke:var(--cyan);stroke-width:1.4"/>
+        <text class="an" x="953" y="372" text-anchor="middle">N</text><text class="an" x="953" y="397" text-anchor="middle">S</text>
+        <text class="ds" x="953" y="426" text-anchor="middle">M1</text>
+        <path class="w cy" d="M912 345H936M912 339V351M936 339V351"/>
+        <text class="an" x="924" y="333" text-anchor="middle">≤8mm</text>
+      </svg>
+    </div>
+    <p class="cap">All ground symbols join at the SuperMini GND pin.</p>
+    <div class="notes">
+      <div class="note"><h3>RS1 + R1 divider</h3><p>Either leg of the FSR to 3V3, the other to GPIO3. R1 goes from GPIO3 to GND. Use GPIO0–4 only for analog, since those are the C3's ADC1 pins.</p></div>
+      <div class="note"><h3>U3 Hall</h3><p>A bare 3-pin A3144 is open-collector. The firmware turns on the internal pull-up, so no extra resistor is needed. Modules like KY-003 already have one.</p></div>
+      <div class="note"><h3>Power</h3><p>Use a TP4056 board with protection (it has separate B± and OUT± pads). OUT+ goes through SW1 to the SuperMini 5V pin. The onboard regulator runs fine from 3.4–4.2 V.</p></div>
+      <div class="note hv"><h3>Programming</h3><p>Turn SW1 off before you plug USB into the helmet SuperMini, so the USB 5 V can't push back into the charger and cell.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 03 BIKE ===== -->
+  <section class="sheet" id="bike">
+    <div class="sh-head"><h2>Bike bench schematic</h2><span class="tag">Sheet <b>03</b> / 08</span></div>
+    <p class="lede">Your relay is a bare relay with no driver board. A GPIO pin can only give about 20 mA at 3.3 V, and the coil wants around 70 mA at 5 V. Q1 does the switching. The solenoid sits on its own 12 V loop through the relay contacts, and S1 plays the bike's START button.</p>
+    <div class="draw">
+      <svg viewBox="0 0 1000 510" role="img" aria-label="Bike schematic: 12V supply through 2A fuse to a buck converter making 5V for the SuperMini and relay coil. GPIO5 through 1k to the base of an NPN transistor with 10k pulldown; collector drives the relay coil, with a flyback diode. 12V rail through START button to relay COM, NO to solenoid, with a flyback diode across the solenoid.">
+        <!-- supply -->
+        <rect class="box" x="30" y="70" width="110" height="120"/>
+        <text class="ds" x="30" y="60">J1 12 V SUPPLY</text>
+        <text class="pn" x="132" y="104" text-anchor="end">+12V</text>
+        <text class="pn" x="132" y="164" text-anchor="end">GND</text>
+        <text class="pn" x="40" y="132">≥ 2 A</text>
+        <path class="w" d="M140 160H160"/>
+        <use href="#s-gnd" class="sym" transform="translate(160 160)"/>
+        <path class="w hv" d="M140 100H170"/>
+        <use href="#s-fuse" class="sym hv" transform="translate(200 100)"/>
+        <text class="ds" x="200" y="84" text-anchor="middle">F1</text><text class="pn" x="200" y="124" text-anchor="middle">2 A</text>
+        <path class="w hv" d="M230 100H860V110"/>
+        <text class="an am" x="300" y="92">+12V</text>
+        <circle class="dot hv" cx="260" cy="100" r="3.4"/>
+        <!-- buck -->
+        <path class="w hv" d="M260 100V240H290"/>
+        <rect class="box" x="290" y="210" width="120" height="110"/>
+        <text class="ds" x="290" y="200">U1 BUCK 12→5 V</text>
+        <text class="pn" x="298" y="244">IN+</text><text class="pn" x="298" y="294">IN−</text>
+        <text class="pn" x="402" y="244" text-anchor="end">OUT+</text><text class="pn" x="402" y="294" text-anchor="end">OUT−</text>
+        <text class="pn" x="350" y="272" text-anchor="middle">MP1584</text>
+        <path class="w" d="M290 290H272M410 290H425"/>
+        <use href="#s-gnd" class="sym" transform="translate(272 290)"/>
+        <use href="#s-gnd" class="sym" transform="translate(425 290)"/>
+        <text class="an" x="350" y="346" text-anchor="middle">trim to 5.0 V first</text>
+        <!-- 5V rail -->
+        <path class="w" d="M410 240H470M445 240V170H760V230"/>
+        <circle class="dot" cx="445" cy="240" r="3.2"/>
+        <text class="an" x="460" y="162">+5V</text>
+        <!-- SuperMini -->
+        <rect class="box" x="470" y="200" width="150" height="230"/>
+        <text class="ds" x="474" y="192">U2 SUPERMINI</text>
+        <text class="pn" x="480" y="244">5V</text><text class="pn" x="480" y="324">GND</text>
+        <text class="pn" x="610" y="374" text-anchor="end">GPIO5</text>
+        <text class="big" x="545" y="300" text-anchor="middle">BIKE</text>
+        <path class="w" d="M470 320H452"/>
+        <use href="#s-gnd" class="sym" transform="translate(452 320)"/>
+        <!-- driver -->
+        <path class="w" d="M620 370H630"/>
+        <use href="#s-res" class="sym" transform="translate(660 370)"/>
+        <text class="ds" x="660" y="352" text-anchor="middle">R2</text><text class="pn" x="660" y="392" text-anchor="middle">1 kΩ</text>
+        <path class="w" d="M690 370H720M700 370V390"/>
+        <circle class="dot" cx="700" cy="370" r="3.2"/>
+        <use href="#s-res" class="sym" transform="translate(700 420) rotate(90)"/>
+        <text class="ds" x="688" y="424" text-anchor="end">R3</text><text class="pn" x="688" y="440" text-anchor="end">10 kΩ</text>
+        <use href="#s-gnd" class="sym" transform="translate(700 450)"/>
+        <use href="#s-npn" class="sym" transform="translate(750 370)"/>
+        <text class="ds" x="782" y="368">Q1</text><text class="pn" x="782" y="384">2N2222</text>
+        <path class="w" d="M760 400V420"/>
+        <use href="#s-gnd" class="sym" transform="translate(760 420)"/>
+        <!-- relay coil + flyback -->
+        <use href="#s-coil" class="sym" transform="translate(760 270)"/>
+        <path class="w" d="M760 310V340"/>
+        <text class="ds" x="778" y="262">K1</text><text class="pn" x="778" y="278">coil</text>
+        <circle class="dot" cx="760" cy="200" r="3.2"/><circle class="dot" cx="760" cy="325" r="3.2"/>
+        <path class="w" d="M760 200H710V220M710 280V325H760"/>
+        <use href="#s-diode" class="sym" transform="translate(710 250) rotate(-90)"/>
+        <text class="ds" x="696" y="250" text-anchor="end">D1</text><text class="pn" x="696" y="266" text-anchor="end">1N4007</text>
+        <!-- mechanical link -->
+        <path class="w cy" d="M773 228H872" stroke-dasharray="3 4"/>
+        <!-- start button -->
+        <use href="#s-btn" class="sym hv" transform="translate(860 140) rotate(90)"/>
+        <text class="ds" x="846" y="136" text-anchor="end">S1</text><text class="an am" x="846" y="152" text-anchor="end">START</text>
+        <path class="w hv" d="M860 170V200"/>
+        <!-- contacts -->
+        <circle cx="860" cy="204" r="3.4" class="fill-bg" style="stroke:var(--amber);stroke-width:1.6"/>
+        <path class="w hv" d="M860 207L892 246"/>
+        <circle cx="896" cy="250" r="3.4" class="fill-bg" style="stroke:var(--ink);stroke-width:1.6"/>
+        <circle cx="860" cy="262" r="3.4" class="fill-bg" style="stroke:var(--amber);stroke-width:1.6"/>
+        <text class="pn" x="848" y="208" text-anchor="end">COM</text>
+        <text class="pn" x="848" y="266" text-anchor="end">NO</text>
+        <text class="pn" x="905" y="254">NC · unused</text>
+        <!-- solenoid + flyback -->
+        <path class="w hv" d="M860 266V300M860 400V450M860 290H930V320M930 380V420H860"/>
+        <circle class="dot hv" cx="860" cy="290" r="3.4"/><circle class="dot hv" cx="860" cy="420" r="3.4"/>
+        <use href="#s-sol" class="sym hv" transform="translate(860 350)"/>
+        <use href="#s-diode" class="sym hv" transform="translate(930 350) rotate(-90)"/>
+        <text class="ds" x="944" y="354">D2</text><text class="pn" x="944" y="370">1N4007</text>
+        <use href="#s-gnd" class="sym hv" transform="translate(860 450)"/>
+        <text class="ds" x="860" y="494" text-anchor="middle">L1 SOLENOID 12 V</text>
+      </svg>
+    </div>
+    <p class="cap">Every ground symbol is one net. The 12 V negative, the buck's GND and the SuperMini GND must be joined.</p>
+    <div class="notes">
+      <div class="note"><h3>Q1 driver</h3><p>GPIO5 HIGH puts about 2.6 mA into Q1's base through R2, which is plenty to saturate it. R3 holds the base low while the board boots, so the relay can't click on by itself.</p></div>
+      <div class="note"><h3>D1 + D2 flyback</h3><p>Coils kick back a voltage spike when switched off. Each diode sits across its coil with the striped end (cathode) toward the + side. Without D1, Q1 or the SuperMini can die.</p></div>
+      <div class="note hv"><h3>S1 START</h3><p>S1 carries the full solenoid current, so it must be rated for it (a 3 A panel button, not a tiny tactile switch). Solenoid fires only when the helmet is on and you press START, like a real bike.</p></div>
+      <div class="note"><h3>Other voltages</h3><p>12 V relay coil: wire K1's top to +12V instead of +5V, nothing else changes. 5 V or 6 V solenoid: match J1 to the solenoid's voltage, keep the buck for logic.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 04 LAYOUT ===== -->
+  <section class="sheet" id="layout">
+    <div class="sh-head"><h2>Physical layout</h2><span class="tag">Sheet <b>04</b> / 08</span></div>
+    <p class="lede">Where each part lives. The pad goes where your head actually presses, the electronics stay out of the impact zone at the back, and the Hall sensor and magnet only meet when the buckle is fully latched.</p>
+    <div class="draw">
+      <svg viewBox="0 0 1000 440" role="img" aria-label="Helmet side view with FSR in the crown padding, a rear pod holding battery, charger and MCU, and cables to the buckle. Detail A shows the Hall sensor in the female buckle and the magnet in the tongue, under 8 mm apart when latched.">
+        <!-- shell -->
+        <path class="w" d="M90 310C90 160 200 60 340 60C480 60 580 160 580 290V310H500C490 262 452 242 402 246L330 252C272 258 205 280 172 310Z"/>
+        <path class="w fr" d="M122 300C122 180 218 92 340 92C462 92 548 180 548 282"/>
+        <text class="pn" x="430" y="120">EPS liner</text>
+        <text class="pn" x="560" y="330" text-anchor="end">front →</text>
+        <!-- FSR -->
+        <rect x="318" y="92" width="44" height="10" style="fill:var(--cyan);fill-opacity:.25;stroke:var(--cyan);stroke-width:1.4"/>
+        <path class="w cy" d="M352 92L410 30H428"/>
+        <text class="an" x="432" y="34">RS1 FSR under the crown pad</text>
+        <!-- pod -->
+        <rect class="box cy" x="48" y="176" width="40" height="84" rx="4"/>
+        <text class="ds" x="68" y="222" text-anchor="middle" style="font-size:11px">POD</text>
+        <text class="an" x="20" y="150">rear pod: BT1, U1,</text>
+        <text class="an" x="20" y="164">SW1, U2</text>
+        <!-- cables -->
+        <path class="w rf" d="M88 190C130 135 220 98 318 97"/>
+        <path class="w rf" d="M88 250C140 330 225 370 292 388"/>
+        <!-- straps + buckle -->
+        <path class="w" d="M235 288L300 382M455 250L338 382"/>
+        <rect class="box" x="292" y="380" width="52" height="22" rx="3"/>
+        <circle class="w cy" cx="318" cy="391" r="36" stroke-dasharray="4 4"/>
+        <path class="w cy" d="M354 391H600"/>
+        <text class="an" x="372" y="384">DETAIL A</text>
+
+        <!-- detail A -->
+        <text class="ds" x="620" y="120">DETAIL A · BUCKLE, LATCHED</text>
+        <path class="w" d="M604 200H640"/>
+        <rect class="box" x="640" y="150" width="170" height="100" rx="6"/>
+        <text class="pn" x="652" y="238">female half</text>
+        <rect x="782" y="186" width="160" height="34" rx="3" style="fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3"/>
+        <path class="w" d="M942 203H984"/>
+        <text class="pn" x="852" y="240">tongue</text>
+        <rect x="784" y="162" width="22" height="12" style="fill:var(--bg);stroke:var(--cyan);stroke-width:1.6"/>
+        <text class="an" x="776" y="172" text-anchor="end">U3</text>
+        <rect x="786" y="190" width="18" height="13" style="fill:var(--bg2);stroke:var(--cyan);stroke-width:1.3"/>
+        <rect x="786" y="203" width="18" height="13" style="fill:var(--cyan);fill-opacity:.2;stroke:var(--cyan);stroke-width:1.3"/>
+        <text class="an" x="795" y="232" text-anchor="middle">M1</text>
+        <path class="w cy" d="M818 174V190M813 174H823M813 190H823"/>
+        <text class="an" x="826" y="186">≤ 8 mm</text>
+        <path class="w rf" d="M784 168H660V140H620"/>
+        <text class="an" x="620" y="134">to pod</text>
+        <text class="pn" x="620" y="290">U3 flat on the inner wall, printed face toward the magnet.</text>
+        <text class="pn" x="620" y="308">A3144 responds to the S pole. If it ignores M1, flip M1.</text>
+        <text class="pn" x="620" y="326">Unlatched, M1 must sit far enough away that U3 reads HIGH.</text>
+      </svg>
+    </div>
+
+    <div class="draw">
+      <svg viewBox="0 0 1000 270" role="img" aria-label="Bench board plan view: 12V adapter, fuse and buck converter on the left; breadboard with SuperMini, transistor, resistors and diode in the middle; relay, START button and solenoid with a target on the right.">
+        <rect class="w fr" x="16" y="16" width="968" height="238"/>
+        <text class="ds" x="30" y="40">BENCH BOARD · TOP VIEW</text>
+        <rect class="box" x="40" y="70" width="100" height="56"/><text x="52" y="94">J1</text><text class="pn" x="52" y="112">12 V adapter</text>
+        <rect class="box hv" x="170" y="84" width="52" height="28"/><text x="196" y="103" text-anchor="middle">F1</text>
+        <rect class="box" x="250" y="70" width="104" height="56"/><text x="262" y="94">U1 buck</text><text class="pn" x="262" y="112">→ 5.0 V</text>
+        <rect class="box" x="390" y="56" width="270" height="160"/><text class="pn" x="400" y="74">breadboard</text>
+        <rect x="406" y="86" width="96" height="48" style="fill:none;stroke:var(--ink);stroke-width:1.4"/><text x="416" y="108">U2</text><text class="pn" x="416" y="124">SuperMini</text>
+        <rect x="530" y="86" width="112" height="48" style="fill:none;stroke:var(--ink);stroke-width:1.4"/><text x="540" y="108">Q1 R2 R3</text><text class="pn" x="540" y="124">D1</text>
+        <path class="w" d="M502 110H530"/>
+        <rect class="box" x="700" y="70" width="90" height="64"/><text x="712" y="96">K1</text><text class="pn" x="712" y="114">relay</text>
+        <rect class="box hv" x="700" y="166" width="90" height="50"/><text class="am" x="712" y="188">S1</text><text class="pn" x="712" y="204">START</text>
+        <rect class="box hv" x="830" y="66" width="130" height="58"/><text class="am" x="842" y="90">L1 solenoid</text><text class="pn" x="842" y="108">+ D2 at terminals</text>
+        <rect x="864" y="160" width="62" height="40" style="fill:none;stroke:var(--cyan);stroke-width:1.4;stroke-dasharray:4 3"/>
+        <text class="an" x="895" y="216" text-anchor="middle">target</text>
+        <path class="w cy" d="M895 124V156" marker-end="url(#arrc)"/>
+        <path class="w hv" d="M140 98H170M222 98H250"/>
+        <path class="w hv" d="M196 112V240H745V216M745 166V134"/>
+        <path class="w hv" d="M790 95H830"/>
+        <path class="w" d="M354 98H390M642 102H700"/>
+        <text class="an" x="420" y="236">12 V loop in 18–20 AWG · logic in jumper wire</text>
+      </svg>
+    </div>
+    <p class="cap">Bench plan is schematic. Keep the 12 V wires short and twisted together, away from the SuperMini's antenna end.</p>
+  </section>
+
+  <!-- ===== 05 WIRING ===== -->
+  <section class="sheet" id="wiring">
+    <div class="sh-head"><h2>Wiring tables</h2><span class="tag">Sheet <b>05</b> / 08</span></div>
+    <p class="lede">The same connections as sheets 02 and 03, one wire per row, so you can tick them off while building. Wire colours are a suggestion.</p>
+    <div class="two">
+      <div>
+        <p class="sub">Helmet unit</p>
+        <div class="tw"><table>
+          <thead><tr><th>From</th><th>To</th><th>Wire</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">BT1 +</td><td class="mono">U1 B+</td><td>red</td></tr>
+            <tr><td class="mono">BT1 −</td><td class="mono">U1 B−</td><td>black</td></tr>
+            <tr><td class="mono">U1 OUT+</td><td class="mono">SW1 → U2 5V</td><td>red</td></tr>
+            <tr><td class="mono">U1 OUT−</td><td class="mono">U2 GND</td><td>black</td></tr>
+            <tr><td class="mono">U2 3V3</td><td class="mono">RS1 leg A</td><td>orange</td></tr>
+            <tr><td class="mono">RS1 leg B</td><td class="mono">U2 GPIO3</td><td>yellow</td></tr>
+            <tr><td class="mono">U2 GPIO3</td><td class="mono">R1 → GND</td><td>10 kΩ</td></tr>
+            <tr><td class="mono">U2 3V3</td><td class="mono">U3 VCC</td><td>orange</td></tr>
+            <tr><td class="mono">U2 GPIO4</td><td class="mono">U3 OUT</td><td>green</td></tr>
+            <tr><td class="mono">U2 GND</td><td class="mono">U3 GND</td><td>black</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div>
+        <p class="sub">Bike bench unit</p>
+        <div class="tw"><table>
+          <thead><tr><th>From</th><th>To</th><th>Wire</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">J1 +12V</td><td class="mono">F1 → 12 V rail</td><td>red, 18 AWG</td></tr>
+            <tr><td class="mono">12 V rail</td><td class="mono">U1 IN+</td><td>red</td></tr>
+            <tr><td class="mono">J1 GND</td><td class="mono">U1 IN−</td><td>black</td></tr>
+            <tr><td class="mono">U1 OUT+</td><td class="mono">U2 5V, K1 coil +</td><td>red</td></tr>
+            <tr><td class="mono">U1 OUT−</td><td class="mono">U2 GND</td><td>black</td></tr>
+            <tr><td class="mono">U2 GPIO5</td><td class="mono">R2 → Q1 base</td><td>yellow</td></tr>
+            <tr><td class="mono">Q1 base</td><td class="mono">R3 → GND</td><td>10 kΩ</td></tr>
+            <tr><td class="mono">Q1 emitter</td><td class="mono">GND</td><td>black</td></tr>
+            <tr><td class="mono">Q1 collector</td><td class="mono">K1 coil −</td><td>blue</td></tr>
+            <tr><td class="mono">D1</td><td class="mono">across K1 coil, stripe to +5V</td><td>—</td></tr>
+            <tr><td class="mono">12 V rail</td><td class="mono">S1 → K1 COM</td><td>red, 18 AWG</td></tr>
+            <tr><td class="mono">K1 NO</td><td class="mono">L1 +</td><td>red, 18 AWG</td></tr>
+            <tr><td class="mono">L1 −</td><td class="mono">J1 GND</td><td>black, 18 AWG</td></tr>
+            <tr><td class="mono">D2</td><td class="mono">across L1, stripe to L1 +</td><td>—</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="note"><h3>Finding K1's pins</h3><p>Multimeter on ohms. The two pins showing about 70 Ω are the coil. Of the other three, the pair that beeps is COM and NC. The remaining one is NO.</p></div>
+      <div class="note"><h3>Q1 pinout</h3><p>2N2222 / 2N3904 flat face toward you, legs down: E, B, C. BC547 is C, B, E. Check your part's datasheet if unsure.</p></div>
+      <div class="note"><h3>Pins to avoid</h3><p>GPIO2, GPIO8 and GPIO9 control how the SuperMini boots. Leave them unconnected.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 06 LOGIC ===== -->
+  <section class="sheet" id="logic">
+    <div class="sh-head"><h2>Logic + firmware</h2><span class="tag">Sheet <b>06</b> / 08</span></div>
+    <p class="lede">Both sketches use the Arduino IDE with the esp32 board package 3.x, board "ESP32C3 Dev Module", and USB CDC On Boot set to Enabled so the Serial Monitor works.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Pad pressed</th><th>Strap latched</th><th>Helmet sends</th><th>K1 relay</th><th>Press START</th></tr></thead>
+      <tbody>
+        <tr><td class="no">no</td><td class="no">no</td><td class="no">nothing</td><td class="no">open</td><td class="no">nothing</td></tr>
+        <tr><td class="ok">yes</td><td class="no">no</td><td class="no">nothing</td><td class="no">open</td><td class="no">nothing</td></tr>
+        <tr><td class="no">no</td><td class="ok">yes</td><td class="no">nothing</td><td class="no">open</td><td class="no">nothing</td></tr>
+        <tr><td class="ok">yes</td><td class="ok">yes</td><td class="ok">"WORN" / 500 ms</td><td class="ok">closed</td><td style="color:var(--amber)">solenoid fires</td></tr>
+        <tr><td colspan="2" class="no">helmet off, dead or out of range</td><td class="no">pings stop</td><td class="no">opens after 1.5 s</td><td class="no">nothing</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="two">
+      <div class="code">
+        <header><b>helmet.ino</b><button class="copy" type="button" id="copy-helmet" data-target="code-helmet">Copy</button></header>
+<pre id="code-helmet"><span class="k">#include</span> &lt;WiFi.h&gt;
+<span class="k">#include</span> &lt;esp_now.h&gt;
+
+<span class="k">const int</span> PAD_PIN  = <span class="s">3</span>;     <span class="c">// RS1 + R1 divider (ADC)</span>
+<span class="k">const int</span> HALL_PIN = <span class="s">4</span>;     <span class="c">// U3 OUT, LOW = magnet near</span>
+<span class="k">const int</span> PAD_THRESHOLD = <span class="s">1000</span>; <span class="c">// tune on sheet 08, step 06</span>
+
+<span class="c">// Paste the MAC the bike board prints at boot</span>
+uint8_t bikeMac[] = {<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>};
+
+<span class="k">void</span> setup() {
+  Serial.begin(<span class="s">115200</span>);
+  pinMode(HALL_PIN, INPUT_PULLUP);
+  analogReadResolution(<span class="s">12</span>);       <span class="c">// 0..4095</span>
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);  <span class="c">// SuperMini fix, sheet 06</span>
+  delay(<span class="s">100</span>);
+  Serial.print(<span class="s">"Helmet MAC: "</span>);
+  Serial.println(WiFi.macAddress());
+
+  esp_now_init();
+  esp_now_peer_info_t peer = {};
+  memcpy(peer.peer_addr, bikeMac, <span class="s">6</span>);
+  peer.channel = <span class="s">0</span>;
+  peer.encrypt = <span class="k">false</span>;
+  esp_now_add_peer(&amp;peer);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">int</span>  pad     = analogRead(PAD_PIN);
+  <span class="k">bool</span> headIn  = pad &gt; PAD_THRESHOLD;
+  <span class="k">bool</span> clicked = digitalRead(HALL_PIN) == LOW;
+
+  Serial.printf(<span class="s">"pad=%d head=%d strap=%d\n"</span>, pad, headIn, clicked);
+
+  <span class="k">if</span> (headIn &amp;&amp; clicked) {
+    <span class="k">const char</span> msg[] = <span class="s">"WORN"</span>;
+    esp_now_send(bikeMac, (<span class="k">const</span> uint8_t*)msg, <span class="k">sizeof</span>(msg));
+  }
+  delay(<span class="s">500</span>);
+}</pre>
+      </div>
+      <div class="code">
+        <header><b>bike.ino</b><button class="copy" type="button" id="copy-bike" data-target="code-bike">Copy</button></header>
+<pre id="code-bike"><span class="k">#include</span> &lt;WiFi.h&gt;
+<span class="k">#include</span> &lt;esp_now.h&gt;
+
+<span class="k">const int</span> RELAY_PIN = <span class="s">5</span>;          <span class="c">// to R2 → Q1 base</span>
+<span class="k">const unsigned long</span> TIMEOUT_MS = <span class="s">1500</span>;
+
+<span class="c">// Paste the MAC the helmet board prints at boot</span>
+uint8_t helmetMac[] = {<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>,<span class="s">0x00</span>};
+
+<span class="k">volatile unsigned long</span> lastPing = <span class="s">0</span>;
+<span class="k">volatile bool</span> everPinged = <span class="k">false</span>;   <span class="c">// stay locked at boot</span>
+
+<span class="c">// esp32 core 3.x signature</span>
+<span class="k">void</span> onRecv(<span class="k">const</span> esp_now_recv_info_t *info,
+            <span class="k">const</span> uint8_t *data, <span class="k">int</span> len) {
+  <span class="k">if</span> (memcmp(info-&gt;src_addr, helmetMac, <span class="s">6</span>) != <span class="s">0</span>) <span class="k">return</span>;
+  <span class="k">if</span> (len &gt;= <span class="s">4</span> &amp;&amp; memcmp(data, <span class="s">"WORN"</span>, <span class="s">4</span>) == <span class="s">0</span>) {
+    lastPing = millis();
+    everPinged = <span class="k">true</span>;
+  }
+}
+
+<span class="k">void</span> setup() {
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);        <span class="c">// locked</span>
+  Serial.begin(<span class="s">115200</span>);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);  <span class="c">// SuperMini fix, sheet 06</span>
+  delay(<span class="s">100</span>);
+  Serial.print(<span class="s">"Bike MAC: "</span>);
+  Serial.println(WiFi.macAddress());
+
+  esp_now_init();
+  esp_now_register_recv_cb(onRecv);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">bool</span> unlocked = everPinged &amp;&amp;
+                  (millis() - lastPing &lt; TIMEOUT_MS);
+  digitalWrite(RELAY_PIN, unlocked ? HIGH : LOW);
+  delay(<span class="s">20</span>);
+}</pre>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="note"><h3>Why only "WORN"</h3><p>If the bike waited for a "removed" message, a dead battery would leave it unlocked forever. Silence means locked, so every failure is safe.</p></div>
+      <div class="note hv"><h3>Lower the radio power</h3><p>Tested on the real boards: at full power one SuperMini's messages never arrived. Setting <code>WIFI_POWER_8_5dBm</code> fixed it, with every message acknowledged. Keep that line in both sketches.</p></div>
+      <div class="note"><h3>Older board package</h3><p>On esp32 core 2.x the receive callback is <code>onRecv(const uint8_t *mac, const uint8_t *data, int len)</code>. Compare <code>mac</code> instead of <code>info-&gt;src_addr</code>.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 07 PARTS ===== -->
+  <section class="sheet" id="parts">
+    <div class="sh-head"><h2>Parts list</h2><span class="tag">Sheet <b>07</b> / 08</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Ref</th><th>Part</th><th>Qty</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="ref" colspan="5" style="color:var(--dim)">HELMET</td></tr>
+        <tr><td class="ref">U2</td><td>ESP32-C3 SuperMini</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Helmet MCU and radio</td></tr>
+        <tr><td class="ref">RS1</td><td>FSR pressure sensor</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Round 12–40 mm pad under the crown padding</td></tr>
+        <tr><td class="ref">U3</td><td>Hall sensor (A3144 or KY-003)</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Digital output type, not the analog 49E</td></tr>
+        <tr><td class="ref">M1</td><td>Neodymium magnet</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>About 6 × 3 mm fits in a buckle tongue</td></tr>
+        <tr><td class="ref">R1</td><td>Resistor 10 kΩ</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Raise to 47 kΩ if the pad reads too low on your head</td></tr>
+        <tr><td class="ref">BT1</td><td>LiPo cell 1S 3.7 V</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>500–1000 mAh, roughly 5–10 h of constant pinging</td></tr>
+        <tr><td class="ref">U1</td><td>TP4056 charger with protection</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>The 6-pad version with OUT+ and OUT−</td></tr>
+        <tr><td class="ref">SW1</td><td>Mini slide switch</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Power on/off</td></tr>
+        <tr><td class="ref" colspan="5" style="color:var(--dim)">BIKE BENCH</td></tr>
+        <tr><td class="ref">U2</td><td>ESP32-C3 SuperMini</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Bike MCU and radio</td></tr>
+        <tr><td class="ref">K1</td><td>Relay, bare (e.g. SRD-05VDC-SL-C)</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Check the coil voltage printed on top</td></tr>
+        <tr><td class="ref">L1</td><td>Solenoid</td><td class="mono">1</td><td><span class="st have">In hand</span></td><td>Check its voltage and current; J1 must match</td></tr>
+        <tr><td class="ref">Q1</td><td>NPN transistor 2N2222</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>2N3904 or BC547 also fine for a 5 V relay</td></tr>
+        <tr><td class="ref">R2</td><td>Resistor 1 kΩ</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Base resistor</td></tr>
+        <tr><td class="ref">R3</td><td>Resistor 10 kΩ</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Base pull-down</td></tr>
+        <tr><td class="ref">D1, D2</td><td>Diode 1N4007</td><td class="mono">2</td><td><span class="st get">Get</span></td><td>Flyback across relay coil and solenoid</td></tr>
+        <tr><td class="ref">U1</td><td>Buck converter MP1584 or LM2596</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Adjustable, set to 5.0 V</td></tr>
+        <tr><td class="ref">J1</td><td>12 V 2 A adapter + DC jack</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Or a 3S Li-ion pack. Above solenoid current</td></tr>
+        <tr><td class="ref">F1</td><td>Fuse 2 A + inline holder</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>Size to about 1.5× solenoid current</td></tr>
+        <tr><td class="ref">S1</td><td>Momentary push button, 3 A</td><td class="mono">1</td><td><span class="st get">Get</span></td><td>16 mm panel button. Not a tactile switch</td></tr>
+        <tr><td class="ref">—</td><td>Breadboard, jumpers, 18 AWG wire</td><td class="mono">—</td><td><span class="st opt">Bench</span></td><td>Plus a multimeter</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ===== 08 BRING-UP ===== -->
+  <section class="sheet" id="bringup">
+    <div class="sh-head"><h2>Bring-up + safety</h2><span class="tag">Sheet <b>08</b> / 08</span></div>
+    <p class="lede">Build and test in this order. Each step checks one thing, so when something fails you know where to look.</p>
+    <ol class="steps">
+      <li><div><b>Set the buck to 5.0 V</b><p>Power U1 from J1 with nothing on its output. Turn the trim screw until the multimeter reads 5.0 V.</p><span class="pass">pass: 4.9–5.1 V</span></div></li>
+      <li><div><b>Identify K1's pins</b><p>Use the multimeter method on sheet 05. Mark COM and NO with a pen.</p><span class="pass">pass: coil ≈ 70 Ω, COM–NC beeps</span></div></li>
+      <li><div><b>Read both MAC addresses</b><p>Flash bike.ino and helmet.ino over USB. Each prints its MAC in the Serial Monitor. Paste each one into the other sketch and flash again.</p><span class="pass">pass: two MACs written down</span></div></li>
+      <li><div><b>Test the driver, no solenoid yet</b><p>Wire U1, U2, R2, R3, Q1, D1 and K1. Temporarily change <code>digitalWrite(RELAY_PIN, LOW)</code> in setup to HIGH.</p><span class="pass">pass: relay clicks at power-up</span></div></li>
+      <li><div><b>Add the solenoid loop</b><p>Wire F1, S1, K1 contacts, L1 and D2. With the relay still forced on, tap START. Then put the LOW back.</p><span class="pass">pass: plunger fires on each tap</span></div></li>
+      <li><div><b>Tune the pressure pad</b><p>Wire the helmet. Watch <code>pad=</code> in the Serial Monitor with the helmet off and on your head. Set <code>PAD_THRESHOLD</code> halfway between the two.</p><span class="pass">pass: head=1 only when worn</span></div></li>
+      <li><div><b>Check the strap</b><p>Latch and unlatch the buckle. If <code>strap=</code> never changes, flip M1 or bring it closer to U3.</p><span class="pass">pass: strap=1 only when latched</span></div></li>
+      <li><div><b>Full run</b><p>Wear it and latch it, then press START. Unlatch it and press START again after two seconds. Then switch the helmet off and try once more.</p><span class="pass">pass: fires only while worn and latched</span></div></li>
+    </ol>
+    <div class="notes">
+      <div class="note hv"><h3>Never from a pin</h3><p>Don't connect K1's coil or L1 directly to a GPIO pin. The pin can't supply the current and the kickback will kill the board.</p></div>
+      <div class="note hv"><h3>Solenoid heat</h3><p>Most small solenoids are rated for short pulses. Holding one on for minutes cooks it. S1 keeps each fire short, like a starter.</p></div>
+      <div class="note"><h3>Common ground</h3><p>The 12 V side and the 5 V side share one GND. If the relay never clicks, check this before anything else.</p></div>
+      <div class="note"><h3>Moving to a real bike</h3><p>K1 goes in the thin wire from the handlebar START button to the starter relay, never in the thick starter motor cable. Power U1 from the bike's switched 12 V.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>HELMATE · BENCH WIRING SET · REV A</span>
+    <span>All pin numbers match firmware on sheet 06</span>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = document.getElementById(btn.dataset.target);
+    var text = pre.innerText;
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Press Ctrl+C';
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } catch (e) { fallback(); }
+  });
+});
+</script>
