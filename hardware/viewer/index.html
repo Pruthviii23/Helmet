@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Helmate Fit Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --stage-bg:#0e1014;           /* baked into every render, keep in sync with build_viewer.py */
+  --bg:#0a0b0e;
+  --panel:#121419;
+  --panel-2:#171a20;
+  --line:#23272f;
+  --line-2:#2e333d;
+  --ink:#eef1f5;
+  --ink-2:#a7afbb;
+  --ink-3:#6d7582;
+  --accent:#f2771f;             /* cradle orange */
+  --accent-ink:#1a0d03;
+  --fsr:#ff9e1a;
+  --hall:#22c3ff;
+  --alc:#f2468f;
+  --ok:#3ccf8e;
+  --warn:#ffb020;
+  --bad:#ff5d5d;
+  --radius:12px;
+  --f-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono)}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:12px max(16px,env(safe-area-inset-left)) 12px max(16px,env(safe-area-inset-right));
+  background:rgba(10,11,14,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand b{font-weight:700;letter-spacing:.02em;font-size:16px}
+.brand span{color:var(--ink-3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){.brand span{display:none}.top{gap:8px}.seg button{padding:6px 10px}.tgl{padding:6px 9px}}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#0b0c0f}
+.tgl{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--ink-2)}
+.tgl[aria-pressed="true"]{color:var(--ink);border-color:var(--line-2)}
+.tgl i{width:26px;height:15px;border-radius:9px;background:var(--line-2);position:relative;transition:background .2s}
+.tgl i::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--ink-3);transition:transform .2s,background .2s}
+.tgl[aria-pressed="true"] i{background:var(--accent)}
+.tgl[aria-pressed="true"] i::after{transform:translateX(11px);background:#fff}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:0;min-height:calc(100vh - 62px)}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+
+/* ---------- viewer ---------- */
+.viewer{position:relative;background:var(--stage-bg);display:flex;align-items:center;justify-content:center;overflow:hidden;
+  min-height:420px;border-right:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-width:980px){.viewer{border-right:0;border-bottom:1px solid var(--line);height:min(78vw,72vh)}}
+.stage{position:relative;aspect-ratio:4/3;width:min(100%, calc((100vh - 62px) * 4 / 3));max-height:100%;transform-origin:0 0;will-change:transform}
+@media (max-width:980px){.stage{width:min(100%, calc(min(78vw,72vh) * 4 / 3))}}
+.stage img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none;color:transparent;font-size:0}
+#imgX{opacity:0;transition:opacity .35s ease}
+.stage img.missing{visibility:hidden}
+.viewer.xray #imgX{opacity:1}
+.viewer.grab{cursor:grab}.viewer.grabbing{cursor:grabbing}
+
+/* pins */
+.pins{position:absolute;inset:0}
+.pin{position:absolute;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;border:0;padding:0;background:transparent;
+  display:grid;place-items:center;transition:opacity .2s}
+.pin .dot{width:12px;height:12px;border-radius:50%;background:var(--c,#fff);box-shadow:0 0 0 3px rgba(14,16,20,.85),0 0 0 4px var(--c,#fff);transition:transform .2s}
+.pin:hover .dot,.pin.sel .dot{transform:scale(1.25)}
+.pin.sel .dot{box-shadow:0 0 0 3px rgba(14,16,20,.85),0 0 0 5px var(--c),0 0 18px 4px color-mix(in srgb,var(--c) 55%,transparent)}
+.pin.hidden{opacity:0;pointer-events:none}
+.pin.behind .dot{background:transparent;box-shadow:0 0 0 2px var(--c);opacity:.55}
+.pin .lbl{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;font-weight:500;
+  padding:3px 8px;border-radius:6px;background:rgba(14,16,20,.86);border:1px solid var(--line-2);color:var(--ink);pointer-events:none}
+.pin .lbl::before{content:"";position:absolute;top:50%;width:14px;height:1px;background:var(--line-2)}
+.pin.r .lbl{left:calc(100% + 14px)}.pin.r .lbl::before{right:100%}
+.pin.l .lbl{right:calc(100% + 14px)}.pin.l .lbl::before{left:100%}
+.pin.behind .lbl{color:var(--ink-3)}
+.nolabels .pin:not(.sel) .lbl{display:none}
+
+/* viewer chrome */
+.hud{position:absolute;pointer-events:none;inset:0}
+.hud > *{pointer-events:auto}
+.hint{position:absolute;left:16px;bottom:14px;font-size:12px;color:var(--ink-3);pointer-events:none}
+.legend{position:absolute;left:16px;bottom:40px;display:flex;gap:14px;font-size:12px;color:var(--ink-2);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s;pointer-events:none}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:3px;border-radius:2px;background:var(--c)}
+.viewer.xray .legend{opacity:1;transform:none}
+@media (max-width:640px){.hint{display:none}.legend{bottom:14px}}
+.hint kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line-2);border-radius:4px;padding:0 4px;color:var(--ink-2)}
+.zoom{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px}
+.zoom button,.views button{border:1px solid var(--line-2);background:rgba(18,20,25,.9);color:var(--ink-2);border-radius:9px;min-width:34px;height:34px;font-size:16px}
+.zoom button:hover,.views button:hover{color:var(--ink);border-color:var(--ink-3)}
+.views{position:absolute;left:14px;top:14px;display:flex;gap:6px;flex-wrap:wrap}
+.views button{font-size:12px;padding:0 10px;height:30px}
+.elev{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;align-items:center}
+.elev button{width:10px;height:10px;border-radius:50%;border:1px solid var(--ink-3);background:transparent;padding:0}
+.elev button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+.elev span{font-size:10px;color:var(--ink-3);writing-mode:vertical-rl;letter-spacing:.12em;text-transform:uppercase;margin:4px 0}
+.loading{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:10px;
+  background:rgba(18,20,25,.9);border:1px solid var(--line);border-radius:20px;padding:5px 12px;transition:opacity .4s}
+.loading .bar{width:120px;height:3px;background:var(--line-2);border-radius:2px;overflow:hidden}
+.loading .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.loading.done{opacity:0;pointer-events:none}
+.compass{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-family:var(--f-mono);font-size:11px;color:var(--ink-3);
+  background:rgba(18,20,25,.8);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+
+/* ---------- panel ---------- */
+.panel{background:var(--panel);display:flex;flex-direction:column;min-width:0}
+@media (min-width:981px){.viewer{position:sticky;top:62px;height:calc(100vh - 62px)}.panel{position:sticky;top:62px;height:calc(100vh - 62px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}}
+.panel h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0;padding:18px 18px 8px}
+.list{list-style:none;margin:0;padding:0 10px}
+.list button{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;border-radius:9px;padding:8px 10px;text-align:left;color:var(--ink-2)}
+.list button:hover{background:var(--panel-2);color:var(--ink)}
+.list button[aria-selected="true"]{background:var(--panel-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.list .sw{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.list .nm{flex:1;min-width:0}
+.list .tag{font-size:11px;color:var(--ink-3)}
+.list .flag{font-size:11px;font-weight:600;color:var(--bad)}
+
+.card{margin:14px 14px 18px;border:1px solid var(--line);background:var(--panel-2);border-radius:var(--radius);padding:16px;display:grid;gap:12px}
+.card h3{margin:0;font-size:17px;display:flex;align-items:center;gap:10px}
+.card h3 .sw{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.card p{margin:0;color:var(--ink-2)}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;margin:0}
+.specs dt{color:var(--ink-3)}.specs dd{margin:0}
+.cable{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:10px}
+.cable .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cable .sub{font-size:12px;color:var(--ink-3)}
+.meter{height:8px;border-radius:5px;background:var(--line);position:relative;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--c)}
+.meter b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.num{display:inline-flex;align-items:center;gap:6px}
+.num input{width:62px;background:var(--panel);border:1px solid var(--line-2);border-radius:7px;padding:4px 8px;text-align:right}
+.badge{font-size:12px;font-weight:600;border-radius:20px;padding:2px 10px}
+.badge.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.badge.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.notes textarea{width:100%;min-height:72px;resize:vertical;background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.notes label{font-size:12px;color:var(--ink-3);display:block;margin-bottom:4px}
+.card .acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink-2)}
+.btn:hover{color:var(--ink);border-color:var(--ink-3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.empty{color:var(--ink-3);padding:4px 18px 18px;font-size:13px}
+
+/* ---------- lower sections ---------- */
+.section{padding:40px max(16px,env(safe-area-inset-left)) 8px;max-width:1360px;margin:0 auto}
+.section h2{font-size:22px;margin:0 0 6px;letter-spacing:-.01em}
+.section > p{margin:0 0 20px;color:var(--ink-2);max-width:72ch}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.shot{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--stage-bg);padding:0;text-align:left;display:flex;flex-direction:column}
+.shot img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform .4s}
+.shot:hover img{transform:scale(1.03)}
+.shot div{padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)}
+.shot b{display:block;font-size:14px}.shot span{font-size:12px;color:var(--ink-3)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+td .sw{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:8px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.callout{margin-top:16px;border-left:3px solid var(--warn);background:var(--panel);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;color:var(--ink-2);max-width:80ch}
+.callout b{color:var(--ink)}
+footer{padding:36px 16px 48px;text-align:center;color:var(--ink-3);font-size:12px}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(5,6,8,.92);display:none;align-items:center;justify-content:center;padding:24px}
+.lb.open{display:flex}
+.lb figure{margin:0;max-width:min(1600px,100%);display:grid;gap:10px}
+.lb img{max-width:100%;max-height:calc(100vh - 120px);border-radius:10px;display:block;margin:0 auto}
+.lb figcaption{text-align:center;color:var(--ink-2)}
+.lb .x{position:absolute;top:14px;right:16px;border:1px solid var(--line-2);background:var(--panel);border-radius:9px;width:36px;height:36px;font-size:18px;color:var(--ink-2)}
+.lb .nav{position:absolute;top:50%;transform:translateY(-50%);border:1px solid var(--line-2);background:var(--panel);border-radius:50%;width:44px;height:44px;font-size:20px;color:var(--ink-2)}
+.lb .prev{left:14px}.lb .next{right:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><b>HELMATE</b><span>Fit viewer · prototype pod on a full-face helmet</span></div>
+  <div class="seg" role="group" aria-label="View mode">
+    <button id="mOut" aria-pressed="true">Outside</button>
+    <button id="mX" aria-pressed="false">X-ray</button>
+  </div>
+  <button class="tgl" id="tLabels" aria-pressed="true"><i></i>Labels</button>
+  <button class="tgl" id="tSpin" aria-pressed="false"><i></i>Spin</button>
+</header>
+
+<div class="layout">
+  <section class="viewer grab" id="viewer" aria-label="Helmet viewer. Drag to rotate.">
+    <div class="stage" id="stage">
+      <img id="imgO" alt="Helmet with the Helmate pod, outside view">
+      <img id="imgX" alt="Helmet X-ray view showing sensors and cables">
+      <div class="pins" id="pins"></div>
+    </div>
+    <div class="hud">
+      <div class="views" id="views">
+        <button data-v="0,1">Front</button><button data-v="90,1">Left</button><button data-v="180,1">Back</button>
+        <button data-v="270,1">Right</button><button data-v="40,0">Under</button><button data-v="60,2">Above</button>
+      </div>
+      <div class="elev" id="elev" aria-label="Camera height"></div>
+      <div class="zoom">
+        <button id="zIn" aria-label="Zoom in">+</button>
+        <button id="zOut" aria-label="Zoom out">&minus;</button>
+        <button id="zReset" aria-label="Reset view" style="font-size:13px">&#8634;</button>
+      </div>
+      <div class="loading" id="loading"><span id="loadTxt">Loading renders</span><span class="bar"><i id="loadBar"></i></span></div>
+      <div class="compass mono" id="compass">—</div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--fsr)"><i></i>FSR lead</span><span style="--c:var(--hall)"><i></i>HALL lead</span><span style="--c:var(--alc)"><i></i>ALC lead</span></div>
+      <div class="hint">Drag to rotate · drag up/down for height · scroll to zoom · <kbd>X</kbd> x-ray</div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2>On the outside</h2>
+    <ul class="list" id="listOut" role="listbox" aria-label="Outside parts"></ul>
+    <h2>Inside &amp; on the strap</h2>
+    <ul class="list" id="listIn" role="listbox" aria-label="Inside parts"></ul>
+    <div id="card"></div>
+  </aside>
+</div>
+
+<section class="section">
+  <h2>Close-ups</h2>
+  <p>Fixed shots of the details that matter for fitting: how the mount holds, how the cables pass under the helmet's edge, and where each sensor sits inside.</p>
+  <div class="gallery" id="gallery"></div>
+</section>
+
+<section class="section">
+  <h2>Cable runs</h2>
+  <p>Lengths measured in Blender along the actual route: down the shell from the pod's plug, under the bottom edge, then along the liner to the sensor. Type your planned lead lengths in the part cards. They're saved in this browser.</p>
+  <div class="tablewrap"><table id="cables"><thead><tr><th>Lead</th><th>Route</th><th>Measured</th><th>Planned</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+  <div class="callout" id="callout"></div>
+</section>
+
+<footer>Rendered in Blender 4.0 (Cycles) from <span class="mono">hardware/tools/helmet_scene.py</span>. The helmet is a generic full-face shape; the Helmate parts are the real printable models.</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Close-up">
+  <button class="x" id="lbX" aria-label="Close">&times;</button>
+  <button class="nav prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="nav next" id="lbNext" aria-label="Next">&#8250;</button>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ================================================================
+   Content. Edit freely: names, text, default planned lengths.
+   ================================================================ */
+const PARTS = {
+  pod:    {name:"Helmet pod", group:"out", c:"#e9edf2", lvl:1,
+           text:"Battery, ESP32-C3, charger, buzzer and the MQ-3 boost all live here. It sits behind the ear on the left side, the usual intercom spot, so it clears the visor pivot and your shoulder check.",
+           specs:[["Size","63 × 43 × 24 mm"],["Plus cradle","6 mm"],["Print","PETG / ASA"],["Weight","~85 g with 2000 mAh"]]},
+  button: {name:"Power button", group:"out", c:"#e9edf2", lvl:2,
+           text:"Flex tab printed into the lid, with a 6×6 mm tact switch under it. Hold 2 s for on/off, like an intercom.",
+           specs:[["Pin","GPIO5 (deep-sleep wake)"],["Press","Long 2 s = on/off"]]},
+  charge: {name:"USB-C charging", group:"out", c:"#e9edf2", lvl:2,
+           text:"TP4056 USB-C port on the bottom face, pointing down and out of the rain. The SuperMini's own USB-C for firmware is on the front end.",
+           specs:[["Charge","1 A, ~2.5 h from empty"],["Faces","Down"]]},
+  ports:  {name:"Sensor plugs", group:"out", c:"#e9edf2", lvl:2,
+           text:"Three JST-PH sockets on the bottom face: FSR 2-pin, HALL 3-pin, ALC 4-pin. Different pin counts, so a plug can't go into the wrong socket.",
+           specs:[["FSR","2 pin"],["HALL","3 pin"],["ALC","4 pin (pin 4 = key)"]]},
+  cradle: {name:"Mount cradle", group:"out", c:"#f2771f", lvl:2,
+           text:"The pod slides down into the dovetail and clicks in. Press the lever on top to slide it back out. Tape version: curved back + 3M VHB. Clamp version: a thin plate goes between shell and liner at the bottom edge, pinched by two M3 screws. No drilling either way.",
+           specs:[["Tape","3M VHB 5952"],["Clamp","2 × M3×12 + nuts"],["Shell range","~2.5 – 7 mm"]]},
+  rim:    {name:"Cable entry", group:"out", c:"#a7afbb", lvl:2,
+           text:"All three leads run down the shell and tuck under the bottom edge, between the shell and the liner. No holes in the shell, so the helmet's certification isn't touched.",
+           specs:[["Gap needed","~3 mm under the edge trim"]]},
+  fsr:    {name:"Head pad (FSR)", group:"in", c:"#ff9e1a", lvl:1, cable:"fsr", plan:10,
+           text:"Interlink FSR 402 under the crown comfort pad. It reads a head pressing up into the helmet.",
+           specs:[["Pin","GPIO4 (ADC)"],["Plug","2-pin JST-PH"],["Pad","18 mm round"]]},
+  chin:   {name:"Alcohol sensor (MQ-3)", group:"in", c:"#f2468f", lvl:1, cable:"alc", plan:25,
+           text:"Chin pod stuck inside the chin bar, right in front of the mouth, grille facing you. On open-face helmets, thread the chin strap through its base instead.",
+           specs:[["Pins","GPIO0 sense · GPIO6 heater"],["Plug","4-pin JST-PH"],["Pod","26 × 30 × 28 mm"]]},
+  hall:   {name:"Strap sensor (Hall)", group:"in", c:"#22c3ff", lvl:1, cable:"hall", plan:20,
+           text:"A3144 in a sleeve that slides onto the chin strap next to the buckle. When the strap is fastened, the magnet sits on top of it.",
+           specs:[["Pin","GPIO3"],["Plug","3-pin JST-PH"],["Webbing","up to 26 mm"]]},
+  magnet: {name:"Strap magnet", group:"in", c:"#3b82f6", lvl:1,
+           text:"10 × 3 mm disc magnet in a sleeve on the other strap end. Buckled = magnet over the Hall sensor = strap latched.",
+           specs:[["Magnet","10 × 3 mm N35+"]]},
+};
+const CABLES = {
+  fsr:  {label:"FSR lead",  route:"Pod → under edge → up the left liner → crown pad", c:"#ff9e1a", part:"fsr"},
+  hall: {label:"HALL lead", route:"Pod → under edge → down the left strap → buckle", c:"#22c3ff", part:"hall"},
+  alc:  {label:"ALC lead",  route:"Pod → under edge → along the left cheek → chin bar", c:"#f2468f", part:"chin"},
+};
+const STILLS = {
+  pod_closeup:   ["Pod on the shell", "Tape cradle. Leads leave the bottom face and tuck under the edge."],
+  clamp_outside: ["Clamp mount", "Clamp arm runs down to the edge; the screw block sits just below it."],
+  clamp_xray:    ["Clamp mount, X-ray", "Shows the leads wrapping under the edge next to the clamp block."],
+  cutaway:       ["Cutaway: inside", "Right half removed. FSR lead up to the crown, ALC lead forward to the chin pod."],
+  cutaway_chin:  ["Chin pod", "MQ-3 pod on the inside of the chin bar, grille toward the mouth."],
+  cutaway_crown: ["FSR at the crown", "Comfort pad removed: the FSR sits on the liner, under where the pad goes."],
+  strap_sensors: ["Strap sensors", "Hall sleeve and magnet sleeve beside the buckle, seen from below."],
+};
+
+/* ================================================================ */
+const D = window.HELMATE_DATA;
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("helmate."+k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("helmate."+k, JSON.stringify(v)); }catch(e){} }
+};
+const NAZ = 360 / D.azStep, NEL = D.els.length;
+const S = { az: Math.round(60 / D.azStep) % NAZ, row: 1, xray:false, labels:true, spin:false, zoom:1, px:0, py:0, sel:null };
+
+const viewer = $("#viewer"), stage = $("#stage"), imgO = $("#imgO"), imgX = $("#imgX"), pinsEl = $("#pins");
+const key = (r, a) => `e${r}_a${String(a * D.azStep).padStart(3, "0")}`;
+const src = (v, r, a) => `frames/${v}_${key(r, a)}.jpg`;
+
+/* ---------- preload, current row first ---------- */
+const cache = {};
+(function preload(){
+  const order = [];
+  const rows = [S.row, ...[...Array(NEL).keys()].filter(r => r !== S.row)];
+  for (const r of rows) for (const v of D.variants) for (let a = 0; a < NAZ; a++) order.push(src(v, r, a));
+  let done = 0, i = 0;
+  const total = order.length, par = 6;
+  function next(){
+    if (i >= total) return;
+    const u = order[i++], im = new Image();
+    im.onload = im.onerror = () => {
+      done++; $("#loadBar").style.width = (100 * done / total) + "%";
+      $("#loadTxt").textContent = done < total ? `Loading renders ${done}/${total}` : "Ready";
+      if (done === total) $("#loading").classList.add("done");
+      next();
+    };
+    im.src = u; cache[u] = im;
+  }
+  for (let k = 0; k < par; k++) next();
+})();
+
+/* ---------- pins ---------- */
+const pinEls = {};
+for (const [id, p] of Object.entries(PARTS)) {
+  const b = document.createElement("button");
+  b.className = "pin"; b.style.setProperty("--c", p.c);
+  b.setAttribute("aria-label", p.name);
+  b.innerHTML = `<span class="dot"></span><span class="lbl">${p.name}</span>`;
+  b.addEventListener("pointerdown", e => e.stopPropagation());
+  b.addEventListener("click", e => { e.stopPropagation(); select(id); });
+  pinsEl.appendChild(b); pinEls[id] = b;
+}
+
+function drawPins(){
+  const f = D.frames[key(S.row, S.az)] || {};
+  const showLvl2 = S.zoom >= 1.6;
+  const placed = [];
+  for (const [id, b] of Object.entries(pinEls)) {
+    const h = f[id]; const p = PARTS[id];
+    if (!h) { b.classList.add("hidden"); continue; }
+    const [x, y, visO, visX] = h;
+    const vis = S.xray ? visX : visO;
+    const wanted = p.lvl === 1 || showLvl2 || S.sel === id;
+    const inView = x > 0.02 && x < 0.98 && y > 0.02 && y < 0.98;
+    // outside mode: hidden parts show as a faint ring only when selected
+    const show = inView && wanted && (vis || S.sel === id);
+    b.classList.toggle("hidden", !show);
+    b.classList.toggle("behind", !vis);
+    b.classList.toggle("sel", S.sel === id);
+    b.classList.toggle("r", x < 0.62); b.classList.toggle("l", x >= 0.62);
+    b.style.left = (x * 100) + "%"; b.style.top = (y * 100) + "%";
+    b.style.transform = `translate(-50%,-50%) scale(${1 / S.zoom})`;
+    b.style.transformOrigin = "50% 50%";
+    if (show) placed.push({ b, x, y });
+  }
+  // keep labels from stacking: nudge labels on the same side apart
+  const h = stage.clientHeight || 1;
+  for (const side of ["r", "l"]) {
+    const g = placed.filter(o => o.b.classList.contains(side)).sort((a, b) => a.y - b.y);
+    let last = -1e9;
+    for (const o of g) {
+      const ypx = o.y * h * S.zoom, minGap = 26;
+      const shift = Math.max(0, last + minGap - ypx);
+      o.b.querySelector(".lbl").style.marginTop = shift ? (shift / S.zoom) + "px" : "";
+      last = ypx + shift;
+    }
+  }
+}
+
+/* ---------- render a frame ---------- */
+for (const im of [imgO, imgX]) {
+  im.addEventListener("error", () => im.classList.add("missing"));
+  im.addEventListener("load", () => im.classList.remove("missing"));
+}
+function show(){
+  imgO.src = src("outside", S.row, S.az);
+  if (D.variants.includes("xray")) imgX.src = src("xray", S.row, S.az);
+  viewer.classList.toggle("xray", S.xray);
+  stage.style.transform = `translate(${S.px}px,${S.py}px) scale(${S.zoom})`;
+  $("#compass").textContent = `${String(S.az * D.azStep).padStart(3, "0")}° · ${D.els[S.row] > 0 ? "+" : ""}${D.els[S.row]}°`;
+  [...$("#elev").querySelectorAll("button")].forEach((b, i) => b.setAttribute("aria-pressed", String(NEL - 1 - i === S.row)));
+  drawPins();
+}
+
+/* camera-height dots (top = highest) */
+$("#elev").insertAdjacentHTML("beforeend", `<span>High</span>`);
+for (let r = NEL - 1; r >= 0; r--) {
+  const b = document.createElement("button"); b.setAttribute("aria-label", `Camera ${D.els[r]}°`);
+  b.addEventListener("click", () => { S.row = r; show(); }); $("#elev").appendChild(b);
+}
+$("#elev").insertAdjacentHTML("beforeend", `<span>Low</span>`);
+
+/* ---------- interaction: rotate / tilt / zoom / pan ---------- */
+let drag = null, vel = 0, inertia = null;
+const ptrs = new Map();
+const PX_PER_STEP = 14, PX_PER_ROW = 70;
+
+viewer.addEventListener("pointerdown", e => {
+  viewer.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  stopSpin(); cancelAnimationFrame(inertia);
+  if (ptrs.size === 2) { drag = { pinch: dist(), z0: S.zoom }; return; }
+  drag = { x: e.clientX, y: e.clientY, ax: 0, ay: 0, pan: e.shiftKey || e.button === 1, t: performance.now() };
+  viewer.classList.add("grabbing"); vel = 0;
+});
+viewer.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (!drag) return;
+  if (drag.pinch) { const c = center(); zoomAt(drag.z0 * dist() / drag.pinch, c.x, c.y); return; }
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.pan) { S.px += dx; S.py += dy; clampPan(); show(); return; }
+  drag.ax += dx; drag.ay += dy;
+  const now = performance.now(); vel = dx / Math.max(1, now - drag.t) * 16; drag.t = now;
+  let changed = false;
+  while (Math.abs(drag.ax) >= PX_PER_STEP) { const s = Math.sign(drag.ax); S.az = (S.az - s + NAZ) % NAZ; drag.ax -= s * PX_PER_STEP; changed = true; }
+  while (Math.abs(drag.ay) >= PX_PER_ROW) { const s = Math.sign(drag.ay); S.row = Math.min(NEL - 1, Math.max(0, S.row + s)); drag.ay -= s * PX_PER_ROW; changed = true; }
+  if (changed) show();
+});
+function endPtr(e){
+  ptrs.delete(e.pointerId);
+  if (ptrs.size) return;
+  viewer.classList.remove("grabbing");
+  if (drag && !drag.pinch && !drag.pan && Math.abs(vel) > 1.2) coast(vel);
+  drag = null;
+}
+viewer.addEventListener("pointerup", endPtr);
+viewer.addEventListener("pointercancel", endPtr);
+function dist(){ const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; }
+function center(){ const [a, b] = [...ptrs.values()]; return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+function coast(v){
+  let acc = 0;
+  const tick = () => {
+    acc += v; v *= 0.93;
+    while (Math.abs(acc) >= PX_PER_STEP) { const s = Math.sign(acc); S.az = (S.az - s + NAZ) % NAZ; acc -= s * PX_PER_STEP; show(); }
+    if (Math.abs(v) > 0.4) inertia = requestAnimationFrame(tick);
+  };
+  inertia = requestAnimationFrame(tick);
+}
+
+viewer.addEventListener("wheel", e => { e.preventDefault(); zoomAt(S.zoom * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+viewer.addEventListener("dblclick", e => { if (e.target.closest(".hud button,.pin")) return; S.zoom > 1.05 ? resetZoom() : zoomAt(2, e.clientX, e.clientY); });
+function zoomAt(z, cx, cy){
+  z = Math.min(2.5, Math.max(1, z));
+  const r = stage.getBoundingClientRect();
+  const ox = (cx - r.left) / S.zoom, oy = (cy - r.top) / S.zoom;      // point in unscaled stage coords
+  S.px += (S.zoom - z) * ox; S.py += (S.zoom - z) * oy; S.zoom = z;
+  clampPan(); show();
+}
+function clampPan(){
+  if (S.zoom <= 1.001) { S.px = 0; S.py = 0; S.zoom = 1; return; }
+  const w = stage.offsetWidth, h = stage.offsetHeight;
+  S.px = Math.min(0, Math.max(w - w * S.zoom, S.px)); S.py = Math.min(0, Math.max(h - h * S.zoom, S.py));
+}
+function resetZoom(){ S.zoom = 1; S.px = 0; S.py = 0; show(); }
+$("#zIn").onclick = () => { const r = stage.getBoundingClientRect(); zoomAt(S.zoom * 1.4, r.left + r.width / 2, r.top + r.height / 2); };
+$("#zOut").onclick = () => { const r = stage.getBoundingClientRect(); zoomAt(S.zoom / 1.4, r.left + r.width / 2, r.top + r.height / 2); };
+$("#zReset").onclick = resetZoom;
+
+/* animate to an angle along the short way */
+let anim = null;
+function goTo(az, row, then){
+  cancelAnimationFrame(anim); stopSpin();
+  const target = ((az % NAZ) + NAZ) % NAZ;
+  S.row = row;
+  const stepOnce = () => {
+    const d = ((target - S.az + NAZ * 1.5) % NAZ) - NAZ / 2;
+    if (Math.round(d) === 0) { show(); then && then(); return; }
+    S.az = (S.az + Math.sign(d) + NAZ) % NAZ; show();
+    anim = setTimeout(() => requestAnimationFrame(stepOnce), 28);
+  };
+  stepOnce();
+}
+document.querySelectorAll("#views button").forEach(b => b.addEventListener("click", () => {
+  const [a, r] = b.dataset.v.split(",").map(Number); resetZoom(); goTo(Math.round(a / D.azStep), r);
+}));
+
+/* spin */
+let spinT = null;
+function setSpin(on){
+  S.spin = on; $("#tSpin").setAttribute("aria-pressed", String(on));
+  clearInterval(spinT); if (on) spinT = setInterval(() => { S.az = (S.az + 1) % NAZ; show(); }, 110);
+}
+function stopSpin(){ if (S.spin) setSpin(false); }
+$("#tSpin").onclick = () => setSpin(!S.spin);
+
+/* mode + labels */
+function setXray(on){ S.xray = on; $("#mOut").setAttribute("aria-pressed", String(!on)); $("#mX").setAttribute("aria-pressed", String(on)); show(); }
+$("#mOut").onclick = () => setXray(false); $("#mX").onclick = () => setXray(true);
+$("#tLabels").onclick = () => { S.labels = !S.labels; $("#tLabels").setAttribute("aria-pressed", String(S.labels)); viewer.classList.toggle("nolabels", !S.labels); };
+
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea")) return;
+  if ($("#lb").classList.contains("open")) { if (e.key === "Escape") closeLb(); if (e.key === "ArrowRight") lbStep(1); if (e.key === "ArrowLeft") lbStep(-1); return; }
+  if (e.key === "ArrowLeft") { stopSpin(); S.az = (S.az + 1) % NAZ; show(); }
+  else if (e.key === "ArrowRight") { stopSpin(); S.az = (S.az - 1 + NAZ) % NAZ; show(); }
+  else if (e.key === "ArrowUp") { S.row = Math.min(NEL - 1, S.row + 1); show(); }
+  else if (e.key === "ArrowDown") { S.row = Math.max(0, S.row - 1); show(); }
+  else if (e.key.toLowerCase() === "x") setXray(!S.xray);
+  else if (e.key.toLowerCase() === "l") $("#tLabels").click();
+  else if (e.key === "+" || e.key === "=") $("#zIn").click();
+  else if (e.key === "-") $("#zOut").click();
+  else if (e.key === "0" || e.key === "Escape") { resetZoom(); select(null); }
+  else return;
+  e.preventDefault();
+});
+
+/* ---------- best view per part ---------- */
+function bestView(id){
+  const inside = PARTS[id].group === "in";
+  let best = null;
+  for (let r = 0; r < NEL; r++) for (let a = 0; a < NAZ; a++) {
+    const h = (D.frames[key(r, a)] || {})[id]; if (!h) continue;
+    const [x, y, vo, vx] = h;
+    const vis = inside ? vx : vo;
+    const sc = (vis ? 2 : 0) + (inside && vo ? 0.6 : 0) - Math.hypot(x - 0.5, y - 0.5) * 1.6 - (r === 1 ? 0 : 0.15);
+    if (!best || sc > best.sc) best = { sc, r, a, x, y, vo };
+  }
+  return { ...best, xray: inside && !best.vo };
+}
+
+/* ---------- panel ---------- */
+function planned(id){ return store.get("plan." + id, PARTS[id].plan); }
+function cableStatus(id){
+  const p = PARTS[id]; if (!p.cable) return null;
+  const need = D.cableCm[p.cable], have = Number(planned(id)) || 0, spare = 3;
+  return { need, have, ok: have >= need + spare, short: Math.max(0, Math.ceil(need + spare - have)) };
+}
+function buildList(){
+  for (const [ul, g] of [[$("#listOut"), "out"], [$("#listIn"), "in"]]) {
+    ul.innerHTML = "";
+    for (const [id, p] of Object.entries(PARTS)) {
+      if (p.group !== g) continue;
+      const st = cableStatus(id);
+      const li = document.createElement("li");
+      li.innerHTML = `<button role="option" aria-selected="${S.sel === id}" style="--c:${p.c}"><span class="sw"></span><span class="nm">${p.name}</span>${st ? (st.ok ? `<span class="tag mono">${st.need} cm</span>` : `<span class="flag">short ${st.short} cm</span>`) : ""}</button>`;
+      li.firstChild.onclick = () => select(id);
+      ul.appendChild(li);
+    }
+  }
+}
+function buildCard(){
+  const c = $("#card");
+  if (!S.sel) { c.innerHTML = `<p class="empty">Pick a part from the list or click a pin on the helmet.</p>`; return; }
+  const id = S.sel, p = PARTS[id], st = cableStatus(id);
+  const cab = st ? (() => {
+    const max = Math.max(st.need + 6, st.have + 4);
+    return `<div class="cable">
+      <div class="row"><b>Lead length</b><span class="badge ${st.ok ? "ok" : "bad"}">${st.ok ? "Long enough" : "Short by " + st.short + " cm"}</span></div>
+      <div class="meter" title="measured route vs planned lead"><i style="width:${Math.min(100, 100 * st.have / max)}%"></i><b style="left:${100 * (st.need + 3) / max}%"></b></div>
+      <div class="row"><span class="sub">Measured route <b class="mono" style="color:var(--ink)">${st.need} cm</b> + 3 cm slack (white mark)</span></div>
+      <div class="row"><label class="num" for="plan">Your planned lead</label><span class="num"><input id="plan" type="number" min="0" max="200" step="1" value="${st.have}"> cm</span></div>
+    </div>`; })() : "";
+  c.innerHTML = `<div class="card" style="--c:${p.c}">
+    <h3><span class="sw"></span>${p.name}</h3>
+    <p>${p.text}</p>
+    <dl class="specs">${p.specs.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+    ${cab}
+    <div class="notes"><label for="note">Your notes (saved in this browser)</label><textarea id="note" placeholder="e.g. moved it 1 cm lower on my helmet">${store.get("note." + id, "")}</textarea></div>
+    <div class="acts"><button class="btn pri" id="goBest">Show me</button><button class="btn" id="goZoom">Zoom in</button><button class="btn" id="goClear">Clear</button></div>
+  </div>`;
+  const plan = $("#plan");
+  if (plan) plan.addEventListener("input", () => { store.set("plan." + id, Number(plan.value)); buildList(); buildCables(); const s2 = cableStatus(id); const b = c.querySelector(".badge"); b.className = "badge " + (s2.ok ? "ok" : "bad"); b.textContent = s2.ok ? "Long enough" : "Short by " + s2.short + " cm"; c.querySelector(".meter i").style.width = Math.min(100, 100 * s2.have / Math.max(s2.need + 6, s2.have + 4)) + "%"; });
+  $("#note").addEventListener("input", e => store.set("note." + id, e.target.value));
+  $("#goBest").onclick = () => focusPart(id, false);
+  $("#goZoom").onclick = () => focusPart(id, true);
+  $("#goClear").onclick = () => select(null);
+}
+function select(id){
+  S.sel = id; buildList(); buildCard(); drawPins();
+  if (id) focusPart(id, false);
+}
+function focusPart(id, zoom){
+  const b = bestView(id);
+  resetZoom();
+  if (b.xray !== S.xray) setXray(b.xray);
+  goTo(b.a, b.r, () => {
+    if (!zoom) return;
+    const h = (D.frames[key(S.row, S.az)] || {})[id]; if (!h) return;
+    const r = stage.getBoundingClientRect();
+    const z = 2.2; S.zoom = z;
+    S.px = r.width / 2 - h[0] * r.width * z; S.py = r.height / 2 - h[1] * r.height * z;
+    clampPan(); show();
+  });
+}
+
+/* ---------- cables table + callout ---------- */
+function buildCables(){
+  const tb = $("#cables tbody"); tb.innerHTML = "";
+  const shorts = [];
+  for (const [k, cb] of Object.entries(CABLES)) {
+    const st = cableStatus(cb.part);
+    if (!st.ok) shorts.push(`${cb.label} needs about ${Math.ceil(st.need + 3)} cm`);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><span class="sw" style="--c:${cb.c}"></span>${cb.label}</td><td style="color:var(--ink-2)">${cb.route}</td>
+      <td class="mono">${st.need} cm</td><td class="mono">${st.have} cm</td>
+      <td><span class="badge ${st.ok ? "ok" : "bad"}">${st.ok ? "OK" : "short " + st.short + " cm"}</span></td>`;
+    tr.style.cursor = "pointer"; tr.onclick = () => { select(cb.part); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    tb.appendChild(tr);
+  }
+  $("#callout").innerHTML = shorts.length
+    ? `<b>The planned leads are too short for this layout.</b> ${shorts.join("; ")} (including 3 cm slack). The FSR is the big one: with the pod on the side, the crown is far away. Two options: make that lead longer, or move the FSR to the <b>left cheek pad</b>, next to the pod. Cheek pads press firmly on a full-face helmet, and that route measures ${D.cableCm.fsr_cheek} cm (it still has to go under the edge and back up).`
+    : `<b>All planned leads reach.</b> Each includes 3 cm of slack for the plug and tucking.`;
+}
+
+/* ---------- gallery + lightbox ---------- */
+const shots = D.stills.filter(s => STILLS[s]).sort((a, b) => Object.keys(STILLS).indexOf(a) - Object.keys(STILLS).indexOf(b));
+shots.forEach((s, i) => {
+  const b = document.createElement("button"); b.className = "shot";
+  b.innerHTML = `<img loading="lazy" src="stills/${s}.jpg" alt="${STILLS[s][0]}"><div><b>${STILLS[s][0]}</b><span>${STILLS[s][1]}</span></div>`;
+  b.onclick = () => openLb(i); $("#gallery").appendChild(b);
+});
+let lbI = 0;
+function openLb(i){ lbI = i; const s = shots[i]; $("#lbImg").src = `stills/${s}.jpg`; $("#lbImg").alt = STILLS[s][0]; $("#lbCap").innerHTML = `<b>${STILLS[s][0]}</b> · ${STILLS[s][1]}`; $("#lb").classList.add("open"); $("#lbX").focus(); }
+function closeLb(){ $("#lb").classList.remove("open"); }
+function lbStep(d){ openLb((lbI + d + shots.length) % shots.length); }
+$("#lbX").onclick = closeLb; $("#lbPrev").onclick = () => lbStep(-1); $("#lbNext").onclick = () => lbStep(1);
+$("#lb").addEventListener("click", e => { if (e.target.id === "lb") closeLb(); });
+
+/* ---------- go ---------- */
+window.addEventListener("resize", () => { clampPan(); show(); });
+buildList(); buildCard(); buildCables(); show();
+</script>
+</body>
+</html>
