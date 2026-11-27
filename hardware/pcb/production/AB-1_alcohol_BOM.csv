@@ -1,0 +1,8 @@
+Comment,Designator,Footprint,LCSC,Qty,Note
+ALC,J1,CONN-SMD_SM06B-SRSS-TB-LF-SN,C160405,1,
+LMP91000SDX/NOPB,U1,WSON-14_L4.0-W4.0-P0.50-BL-EP-1,C2651584,1,"Potentiostat AFE, I2C addr 0x48. MENB tied low = always on (~10 uA). VREF = VDD."
+100nF,C1,C_0402_1005Metric,C1525,1,
+10uF,C2,C_0603_1608Metric,C19702,1,
+47nF,C3,C_0402_1005Metric,C1532,1,"TIA low-pass, tune per SPEC app note"
+1k,R1,R_0402_1005Metric,C11702,1,cable driver isolation
+SPEC 110-202 EtOH,S1,PinHeader_1x03_P2.54mm_Vertical,C6970020,1,PLACEHOLDER FOOTPRINT: draw from SPEC 110-202 mechanical drawing before layout

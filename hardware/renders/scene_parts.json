@@ -1,0 +1,10 @@
+{"out": "C:/Users/india/Desktop/Helmate/hardware/renders/proto_accessories.png", "res": [1600,1100], "samples": 40,
+ "camera": {"loc": [-40,-230,210], "target": [5,-5,0], "lens": 50},
+ "parts": [
+  {"stl": "enclosure/proto/out/cradle_clamp.stl", "color": [0.95,0.55,0.12], "offset": [-55,20,6]},
+  {"stl": "enclosure/proto/out/clamp_inner.stl", "color": [0.95,0.55,0.12], "offset": [-10,20,12]},
+  {"stl": "enclosure/proto/out/alc_pod.stl", "color": [0.08,0.085,0.095], "offset": [35,25,0]},
+  {"stl": "enclosure/proto/out/alc_grille.stl", "color": [0.55,0.58,0.62], "offset": [70,25,2], "rough": 0.35},
+  {"stl": "enclosure/proto/out/hall_sleeve.stl", "color": [0.08,0.085,0.095], "offset": [35,-25,0]},
+  {"stl": "enclosure/proto/out/magnet_sleeve.stl", "color": [0.2,0.5,0.85], "offset": [65,-25,0]}
+ ]}

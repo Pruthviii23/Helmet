@@ -1,0 +1,24 @@
+Comment,Designator,Footprint,LCSC,Qty,Note
+ESP32-C3-MINI-1-N4,U1,WIFIM-SMD_ESP32-C3-MINI-1,C2838502,1,"Pre-certified module (FCC/CE/IC/TELEC/SRRC). Keep antenna end at board edge, no copper under it."
+10uF,"C1,C5,C8",C_0603_1608Metric,C19702,3,
+100nF,"C10,C11,C12,C2,C9",C_0402_1005Metric,C1525,5,
+10k,"R1,R12,R2,R3,R6,R7,R8,R9",R_0402_1005Metric,C25744,8,
+1uF,"C3,C4,C6,C7",C_0402_1005Metric,C52923,4,EN power-on delay
+USB-C 16P,J1,USB-C_SMD-TYPE-C-31-M-12_1,C165948,1,
+5.1k,"R4,R5",R_0402_1005Metric,C25905,2,USB-C sink identification
+USBLC6-2SC6,U2,SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL,C7519,1,ESD on USB data + VBUS
+BQ25180YBGR,U3,DSBGA-8_L1.6-W0.9-R2-C4-P0.40-BL,C3682423,1,"1 A linear charger, power path, ship mode 3 uA, long-press on TS/MR = ship mode or reset"
+Power button,SW1,SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5,C318884,1,Long press = on/off (ship mode). Pads 1-2 and 3-4 are the internally joined pairs.
+Battery,J2,CONN-SMD_P2.00_S2B-PH-SM4-TB-LF-SN,C295747,1,JST-PH 2 pin. Check the cell's lead order: pin 1 = +. Cell must carry its own protection PCM.
+RT9080-33GJ5,U4,TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BL,C841192,1,"600 mA LDO, 2 uA quiescent"
+1M,"R10,R11",R_0402_1005Metric,C26083,2,
+FSR,J3,CONN-SMD_2P-P1.00_SM02B-SRSS-TB-LF-SN,C160402,1,JST-SH 2 pin to Interlink FSR 402
+HALL,J4,CONN-SMD_SM03B-SRSS-TB-LF-SN-P,C160403,1,JST-SH 3 pin to SB-1
+ALC,J5,CONN-SMD_SM06B-SRSS-TB-LF-SN,C160405,1,JST-SH 6 pin to AB-1
+AO3400A,Q1,SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR,C20917,1,
+100,R13,R_0402_1005Metric,C25076,1,
+100k,R14,R_0402_1005Metric,C25741,1,keeps it off during boot
+MLT-8530,BZ1,BUZ-SMD_4P-L8.5-W8.5-P8.50-BR,C94599,1,VERIFY PADS against the datasheet drawing before ordering: coil assumed on pads 1-2
+1N4148WS,D1,D_SOD-323,C2128,1,flyback across the buzzer coil
+Green,D2,LED_0603_1608Metric,C72043,1,
+1k,R15,R_0402_1005Metric,C11702,1,

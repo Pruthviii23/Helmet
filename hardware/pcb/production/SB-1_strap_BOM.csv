@@ -1,0 +1,4 @@
+Comment,Designator,Footprint,LCSC,Qty,Note
+HALL,J1,CONN-SMD_SM03B-SRSS-TB-LF-SN-P,C160403,1,
+DRV5032FB,U1,SOT-23_L2.9-W1.3-P1.90-LS2.4-BR,C2655033,1,"0.5 uA omnipolar Hall switch, 5 Hz, push-pull"
+100nF,C1,C_0402_1005Metric,C1525,1,
