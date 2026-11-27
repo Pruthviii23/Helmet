@@ -1,0 +1,10 @@
+{"out": "C:/Users/india/Desktop/Helmate/hardware/renders/proto_vs_production.png", "res": [1600,900], "samples": 48,
+ "camera": {"loc": [-5,-215,165], "target": [-2,0,6], "lens": 50},
+ "parts": [
+  {"stl": "enclosure/proto/out/pod_body.stl", "color": [0.3,0.31,0.33], "offset": [-42,0,6]},
+  {"stl": "enclosure/proto/out/pod_lid.stl", "color": [0.3,0.31,0.33], "offset": [-42,0,6]},
+  {"stl": "enclosure/proto/out/cradle_tape.stl", "color": [0.95,0.5,0.1], "offset": [-42,0,6]},
+  {"stl": "enclosure/production/out/pod_body.stl", "color": [0.025,0.027,0.03], "rough": 0.35, "offset": [38,0,6]},
+  {"stl": "enclosure/production/out/pod_button.stl", "color": [0.95,0.42,0.06], "rough": 0.3, "offset": [38,0,6]},
+  {"stl": "enclosure/proto/out/cradle_tape.stl", "color": [0.95,0.5,0.1], "offset": [38,0,6]}
+ ]}

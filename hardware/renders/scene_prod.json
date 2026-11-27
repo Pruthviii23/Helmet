@@ -1,0 +1,7 @@
+{"out": "C:/Users/india/Desktop/Helmate/hardware/renders/production_concept.png", "res": [1600,1100], "samples": 64,
+ "camera": {"loc": [-70,-120,85], "target": [8,-4,4], "lens": 60},
+ "parts": [
+  {"stl": "enclosure/production/out/pod_body.stl", "color": [0.025,0.027,0.03], "rough": 0.35, "offset": [0,0,2.5]},
+  {"stl": "enclosure/production/out/pod_button.stl", "color": [0.95,0.42,0.06], "rough": 0.3, "offset": [0,0,2.5]},
+  {"stl": "enclosure/production/out/chin_pod.stl", "color": [0.025,0.027,0.03], "rough": 0.35, "offset": [45,-8,0]}
+ ]}

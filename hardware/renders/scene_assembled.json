@@ -1,0 +1,7 @@
+{"out": "C:/Users/india/Desktop/Helmate/hardware/renders/proto_pod_assembled.png", "res": [1600,1100], "samples": 40,
+ "camera": {"loc": [-95,-150,70], "target": [0,-6,6], "lens": 60},
+ "parts": [
+  {"stl": "enclosure/proto/out/pod_body.stl", "color": [0.06,0.065,0.075], "rough": 0.45},
+  {"stl": "enclosure/proto/out/pod_lid.stl", "color": [0.09,0.095,0.105], "rough": 0.4},
+  {"stl": "enclosure/proto/out/cradle_tape.stl", "color": [0.95,0.5,0.1], "rough": 0.5}
+ ]}
