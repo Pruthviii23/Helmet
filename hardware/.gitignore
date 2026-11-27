@@ -1,0 +1,12 @@
+*.kicad_prl
+*-backups/
+*.erc.rpt
+__pycache__/
+fp-info-cache
+renders/helmet/viewer_build/
+renders/helmet/review/
+renders/helmet/dbg/
+renders/helmet/*.blend1
+renders/helmet/turn.log
+renders/helmet/viewer_build_hd/
+renders/helmet/turn_hd.log
