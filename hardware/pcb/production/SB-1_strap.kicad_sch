@@ -1,0 +1,1024 @@
+(kicad_sch
+  (version 20231120)
+  (generator "helmate_schgen")
+  (generator_version "1.0")
+  (uuid "43602b6c-5633-4c6b-8afd-44ca9cdfce97")
+  (paper "A3")
+  (title_block
+    (title "Helmate SB-1 strap Hall board")
+    (date "2026-11-27")
+    (rev "A")
+    (company "Helmate")
+    (comment 1 "Generated from hardware/pcb/helmate_production.py, edit there")
+  )
+  (lib_symbols
+    (symbol
+      "helmate:SM03B-SRSS-TB"
+      (in_bom yes)
+      (on_board yes)
+      (property
+        "Reference"
+        "U"
+        (at 0 12.70 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Value"
+        "SM03B-SRSS-TB"
+        (at 0 -12.70 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Footprint"
+        "helmate:CONN-SMD_SM03B-SRSS-TB-LF-SN-P"
+        (at 0 -15.24 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "Datasheet"
+        "https://lcsc.com/product-detail/Others_JST-Sales-America__JST-Sales-America-SM03B-SRSS-TB-LF-SN-P_C160403.html"
+        (at 0 -17.78 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "Manufacturer"
+        "JST"
+        (at 0 -20.32 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "MPN"
+        "SM03B-SRSS-TB(LF)(SN)"
+        (at 0 -22.86 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "LCSC Part"
+        "C160403"
+        (at 0 -25.40 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "ki_keywords"
+        "Wire To Board / Wire To Wire Connector"
+        (at 0 -27.94 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (symbol
+        "SM03B-SRSS-TB_0_1"
+        (rectangle
+          (start -3.81 5.08)
+          (end 6.35 -5.08)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type background)
+          )
+        )
+        (circle
+          (center -2.54 3.81)
+          (radius 0.38)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -6.35 2.54 0)
+          (length 2.54)
+          (name
+            "1"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "1"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -6.35 -0.00 0)
+          (length 2.54)
+          (name
+            "2"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "2"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -6.35 -2.54 0)
+          (length 2.54)
+          (name
+            "3"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "3"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at 3.81 -7.62 90)
+          (length 2.54)
+          (name
+            "4"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "4"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at 3.81 7.62 270)
+          (length 2.54)
+          (name
+            "5"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "5"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+      )
+    )
+    (symbol
+      "helmate:DRV5032FBDBZR"
+      (in_bom yes)
+      (on_board yes)
+      (property
+        "Reference"
+        "U"
+        (at 0 7.62 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Value"
+        "DRV5032FBDBZR"
+        (at 0 -7.62 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Footprint"
+        "helmate:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR"
+        (at 0 -10.16 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "Datasheet"
+        "https://www.lcsc.com/datasheet/C2655033.pdf"
+        (at 0 -12.70 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "Manufacturer"
+        "TI(德州仪器)"
+        (at 0 -15.24 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "MPN"
+        "DRV5032FBDBZR"
+        (at 0 -17.78 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "LCSC Part"
+        "C2655033"
+        (at 0 -20.32 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property
+        "ki_keywords"
+        "Magnetic Sensors"
+        (at 0 -22.86 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (symbol
+        "DRV5032FBDBZR_0_1"
+        (rectangle
+          (start -2.54 5.08)
+          (end 5.08 -5.08)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type background)
+          )
+        )
+        (circle
+          (center -1.27 3.81)
+          (radius 0.38)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -5.08 2.54 0)
+          (length 2.54)
+          (name
+            "VCC"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "1"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -5.08 -0.00 0)
+          (length 2.54)
+          (name
+            "OUT"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "2"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          unspecified
+          line
+          (at -5.08 -2.54 0)
+          (length 2.54)
+          (name
+            "GND"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "3"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+      )
+    )
+    (symbol
+      "Device:C"
+      (pin_numbers
+        (hide yes)
+      )
+      (pin_names
+        (offset 0.254)
+      )
+      (exclude_from_sim no)
+      (in_bom yes)
+      (on_board yes)
+      (in_pos_files yes)
+      (duplicate_pin_numbers_are_jumpers no)
+      (property
+        "Reference"
+        "C"
+        (at 0.635 2.54 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          (justify left)
+        )
+      )
+      (property
+        "Value"
+        "C"
+        (at 0.635 -2.54 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          (justify left)
+        )
+      )
+      (property
+        "Footprint"
+        ""
+        (at 0.9652 -3.81 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (hide yes)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Datasheet"
+        ""
+        (at 0 0 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (hide yes)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "Description"
+        "Unpolarized capacitor"
+        (at 0 0 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (hide yes)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "ki_keywords"
+        "cap capacitor"
+        (at 0 0 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (hide yes)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property
+        "ki_fp_filters"
+        "C_*"
+        (at 0 0 0)
+        (show_name no)
+        (do_not_autoplace no)
+        (hide yes)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (symbol
+        "C_0_1"
+        (polyline
+          (pts
+            (xy -2.032 0.762)
+            (xy 2.032 0.762)
+          )
+          (stroke
+            (width 0.508)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (polyline
+          (pts
+            (xy -2.032 -0.762)
+            (xy 2.032 -0.762)
+          )
+          (stroke
+            (width 0.508)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+      )
+      (symbol
+        "C_1_1"
+        (pin
+          passive
+          line
+          (at 0 3.81 270)
+          (length 2.794)
+          (name
+            ""
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "1"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin
+          passive
+          line
+          (at 0 -3.81 90)
+          (length 2.794)
+          (name
+            ""
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number
+            "2"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+      )
+      (embedded_fonts no)
+    )
+  )
+  (symbol
+    (lib_id "helmate:SM03B-SRSS-TB")
+    (at 45.72 52.07 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "42da21ec-af28-4566-9ed3-c4879fd27288")
+    (property
+      "Reference"
+      "J1"
+      (at 45.72 41.91 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Value"
+      "HALL"
+      (at 45.72 62.23 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Footprint"
+      "helmate:CONN-SMD_SM03B-SRSS-TB-LF-SN-P"
+      (at 45.72 52.07 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "Datasheet"
+      ""
+      (at 45.72 52.07 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "LCSC"
+      "C160403"
+      (at 45.72 52.07 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "MPN"
+      "HALL"
+      (at 45.72 52.07 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (pin
+      "1"
+      (uuid "4c02060a-d441-4a4f-9e21-bb1bd132f766")
+    )
+    (pin
+      "2"
+      (uuid "07f9e2cd-d446-41f6-8eee-70d761e42ceb")
+    )
+    (pin
+      "3"
+      (uuid "b87efb7a-ec74-4b56-9dbc-e52a954bbf06")
+    )
+    (pin
+      "4"
+      (uuid "bf9ededa-b9b3-4695-93f9-6c8ec4210be0")
+    )
+    (pin
+      "5"
+      (uuid "5c59460a-d2a2-42f8-89c2-48b27a36a862")
+    )
+    (instances
+      (project
+        "SB-1_strap"
+        (path
+          "/43602b6c-5633-4c6b-8afd-44ca9cdfce97"
+          (reference "J1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (label
+    "+3V3"
+    (at 39.37 49.53 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "150756ed-0a0b-423a-8b50-3a3eb95895eb")
+  )
+  (label
+    "HALL"
+    (at 39.37 52.07 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "14a46a92-bb82-4b42-9f31-e3ddaf69b86b")
+  )
+  (label
+    "GND"
+    (at 39.37 54.61 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "e5231ead-0064-4c7e-be9b-c3a50ec87357")
+  )
+  (no_connect
+    (at 49.53 59.69)
+    (uuid "d6b4934a-cf5f-4372-a128-0b488647cb12")
+  )
+  (no_connect
+    (at 49.53 44.45)
+    (uuid "f5344464-0919-461c-a474-9a2ade3404a5")
+  )
+  (symbol
+    (lib_id "helmate:DRV5032FBDBZR")
+    (at 74.93 43.18 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "7059b9cd-15f3-4d94-88c5-789dfe37e18b")
+    (property
+      "Reference"
+      "U1"
+      (at 74.93 38.1 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Value"
+      "DRV5032FB"
+      (at 74.93 48.26 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Footprint"
+      "helmate:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR"
+      (at 74.93 43.18 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "Datasheet"
+      ""
+      (at 74.93 43.18 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "LCSC"
+      "C2655033"
+      (at 74.93 43.18 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "MPN"
+      "DRV5032FB"
+      (at 74.93 43.18 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "Note"
+      "0.5 uA omnipolar Hall switch, 5 Hz, push-pull"
+      (at 74.93 43.18 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (pin
+      "1"
+      (uuid "cf1e2762-d36f-4da8-a5b2-197bbea4cff5")
+    )
+    (pin
+      "2"
+      (uuid "9bf64611-4c56-42a4-810b-fb7fb108f261")
+    )
+    (pin
+      "3"
+      (uuid "7084ba8a-ff52-4dad-92a2-e595ed9e15f2")
+    )
+    (instances
+      (project
+        "SB-1_strap"
+        (path
+          "/43602b6c-5633-4c6b-8afd-44ca9cdfce97"
+          (reference "U1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (label
+    "+3V3"
+    (at 69.85 40.64 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "b208f2e8-bd0a-4673-b2f5-eadde529e7ac")
+  )
+  (label
+    "HALL"
+    (at 69.85 43.18 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "79b78058-79c5-4a31-932c-342f1c0f0a20")
+  )
+  (label
+    "GND"
+    (at 69.85 45.72 180)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "668a314f-6e83-4e15-bb0c-5ff6ab91f981")
+  )
+  (symbol
+    (lib_id "Device:C")
+    (at 80.01 48.26 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "3ee43144-8391-4f2f-bf13-be87128e4f04")
+    (property
+      "Reference"
+      "C1"
+      (at 80.01 41.91 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Value"
+      "100nF"
+      (at 80.01 54.61 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property
+      "Footprint"
+      "Capacitor_SMD:C_0402_1005Metric"
+      (at 80.01 48.26 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "Datasheet"
+      ""
+      (at 80.01 48.26 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "LCSC"
+      "C1525"
+      (at 80.01 48.26 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (property
+      "MPN"
+      "100nF"
+      (at 80.01 48.26 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (hide yes)
+      )
+    )
+    (pin
+      "1"
+      (uuid "64ea2548-7a16-4917-9936-892289b88347")
+    )
+    (pin
+      "2"
+      (uuid "10da11cf-566d-4a18-92ad-d5b3e98806c3")
+    )
+    (instances
+      (project
+        "SB-1_strap"
+        (path
+          "/43602b6c-5633-4c6b-8afd-44ca9cdfce97"
+          (reference "C1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (label
+    "+3V3"
+    (at 80.01 44.45 90)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify left)
+    )
+    (uuid "eeebd6e7-7fed-4f6b-a422-d2e21cee8f9d")
+  )
+  (label
+    "GND"
+    (at 80.01 52.07 270)
+    (effects
+      (font
+        (size 1 1)
+      )
+      (justify right)
+    )
+    (uuid "871f2a6f-f3fd-4b40-891b-c6695ec67f31")
+  )
+  (text
+    "SB-1  strap board: DRV5032 nanopower Hall switch"
+    (exclude_from_sim no)
+    (at 25 33 0)
+    (effects
+      (font
+        (size 2.2 2.2)
+        (bold yes)
+      )
+      (justify left)
+    )
+    (uuid "9ff37ad6-cf0e-4cba-b737-12a9ba303271")
+  )
+  (sheet_instances
+    (path
+      "/"
+      (page "1")
+    )
+  )
+)
